@@ -27,3 +27,11 @@ To remove a dependency from the project:
 ```
 pipenv remove <package>
 ```
+
+## Development
+
+Run the app in dev mode:
+
+```
+flask --app app run --debug
+```

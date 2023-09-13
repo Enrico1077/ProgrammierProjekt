@@ -17,4 +17,5 @@ steps:
     - '--region'
     - 'global'
 images:
-- 'gcr.io/$PROJECT_ID/programmierprojekt:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/programmierprojekt:$COMMIT_SHA'
+

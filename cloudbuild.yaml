@@ -1,5 +1,6 @@
 #!!!! cloudbuild.yaml Datei für development- bei merge mit main-branch "development" durch "programmierprojekt" ersetzten !!!!
 #  (oder cloudbuild.yaml des main-branch beibehalten)
+
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -17,7 +18,7 @@ steps:
     - '--image'
     - 'gcr.io/$PROJECT_ID/development:$COMMIT_SHA'
     - '--region'
-    - 'global'
+    - 'europe-west4'
 images:
   - 'gcr.io/$PROJECT_ID/development:$COMMIT_SHA'
 

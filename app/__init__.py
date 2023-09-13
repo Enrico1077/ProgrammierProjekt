@@ -22,8 +22,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # blueprint for testing the app
-    from . import test
-    app.register_blueprint(test.bp)
+    # blueprint for handling http requests
+    from . import controller
+    app.register_blueprint(controller.bp)
 
     return app

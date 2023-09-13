@@ -20,7 +20,6 @@ webServer = HTTPServer((hostName, serverPort), MyServer)
 print("Server started http://%s:%s" % (hostName, serverPort))
 
 try:
-    print("try erfolgreich")
     webServer.serve_forever()   
 except KeyboardInterrupt:
     pass

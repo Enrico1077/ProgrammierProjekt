@@ -15,6 +15,6 @@ steps:
     - '--image'
     - 'gcr.io/$PROJECT_ID/programmierprojekt:$COMMIT_SHA'
     - '--region'
-    - 'europe-west4'
+    - 'global'
 images:
 - 'gcr.io/$PROJECT_ID/programmierprojekt:$COMMIT_SHA'

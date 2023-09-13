@@ -11,3 +11,6 @@ waitress = "*"
 
 [requires]
 python_version = "3.9"
+
+[scripts]
+start = "waitress-serve --port 80 --host 0.0.0.0 --call app:create_app"

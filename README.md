@@ -35,3 +35,19 @@ Run the app in dev mode:
 ```
 flask --app app run --debug
 ```
+
+## Production
+
+Run the app in production mode:
+
+```
+pipenv run start
+```
+
+## API
+
+Hello-World-Message
+
+```
+http://localhost/api/hello
+```

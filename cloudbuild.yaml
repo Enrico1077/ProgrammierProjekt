@@ -1,3 +1,5 @@
+#!!!! cloudbuild.yaml Datei für development- bei merge mit main-branch development durch programmierprojekt ersetzten !!!!
+
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'

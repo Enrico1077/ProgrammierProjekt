@@ -1,8 +1,12 @@
+""" module to initialize a flask backend server """
+
 import os
 from flask import Flask
+from . import controller
 
 # create flask app
 def create_app(test_config=None):
+    """ function to initialize a flask backend server """
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -23,7 +27,6 @@ def create_app(test_config=None):
         pass
 
     # blueprint for handling http requests
-    from . import controller
     app.register_blueprint(controller.bp)
 
     return app

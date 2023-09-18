@@ -18,6 +18,12 @@ To add or remove dependencies to the project, edit the file "requirements.txt".
 
 ## Development
 
+To lint all python files:
+
+```
+pylint app/*.py
+```
+
 Run the app in dev mode:
 
 ```

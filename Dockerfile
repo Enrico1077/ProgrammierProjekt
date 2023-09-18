@@ -8,7 +8,11 @@ WORKDIR /app
 COPY . .
 
 # Create virtual environment
-RUN pipenv install
+RUN pipenv install --ignore-pipfile
+
+# Install waitress, flask
+RUN pipenv run pip install waitress
+RUN pipenv run pip install flask
 
 # Start webserver
 CMD ["pipenv", "run", "start"]

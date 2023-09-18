@@ -2,31 +2,19 @@
 
 Backend fürs Programmier-Projekt
 
+Development URL: https://development-ujgmkp4tpq-ez.a.run.app
+
+Production URL: https://programmierprojekt-ujgmkp4tpq-ez.a.run.app
+
 ## Installation
 
 To install the project's dependencies run the following command:
 
 ```
-pipenv install
+pip install -r requirements.txt
 ```
 
-To add a new dependency to the project:
-
-```
-pipenv install <package>
-```
-
-or for dev-dependencies:
-
-```
-pipenv install --dev <package>
-```
-
-To remove a dependency from the project:
-
-```
-pipenv remove <package>
-```
+To add or remove dependencies to the project, edit the file "requirements.txt".
 
 ## Development
 
@@ -41,7 +29,7 @@ flask --app app run --debug
 Run the app in production mode:
 
 ```
-pipenv run start
+waitress-serve --port 5000 --host 0.0.0.0 --call app:create_app
 ```
 
 ## API
@@ -49,5 +37,5 @@ pipenv run start
 Hello-World-Message
 
 ```
-http://localhost/api/hello
+http://localhost:5000/api/hello
 ```

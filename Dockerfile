@@ -1,18 +1,12 @@
 FROM python:3.9
 
-# Install pipenv
-RUN pip install pipenv
+# Install dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 # Create a working directory and copy application into container
 WORKDIR /app
 COPY . .
 
-# Create virtual environment
-RUN pipenv install --ignore-pipfile
-
-# Install waitress, flask
-RUN pipenv run pip install waitress
-RUN pipenv run pip install flask
-
-# Start webserver
-CMD ["pipenv", "run", "start"]
+# Start webserver on port 80
+CMD ["waitress-serve", "--port", "80", "--host", "0.0.0.0", "--call", "app:create_app"]

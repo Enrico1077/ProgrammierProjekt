@@ -24,9 +24,5 @@ steps:
 images:
   - "gcr.io/$PROJECT_ID/development:$COMMIT_SHA"
   
-artifacts:
-  images:
-    - "gcr.io/$PROJECT_ID/development:$COMMIT_SHA"
-  retain: 2  # Anzahl der Images, die behalten werden sollen
-  olderThan: 10s
+
   

@@ -5,9 +5,9 @@ name: Python Tests
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ "development" ]  #Bei Merge mit Main "development" -> "main"
   pull_request:
-    branches: [ "development" ]
+    branches: [ "development" ]  #Bei Merge mit Main "development" -> "main"
 
 permissions:
   contents: read

@@ -29,4 +29,9 @@ def create_app(test_config=None):
     # blueprint for handling http post requests
     app.register_blueprint(upload.bp)
 
+    # a simple API to test the connection
+    @app.route('/hello')
+    def hello():
+        return 'Hello from the coolest backend server in the world!'
+
     return app

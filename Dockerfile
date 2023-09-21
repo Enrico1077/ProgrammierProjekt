@@ -1,12 +1,12 @@
-FROM ubuntu
+FROM python:3.9
 
-# Install Linux dependencies
-RUN apt-get update 
-RUN apt-get -y install python3 python3-pip
+# Install dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 # Create a working directory and copy application into container
 WORKDIR /app
-COPY ./app/ .
+COPY . .
 
-# Start API
-ENTRYPOINT ["python3", "ServerTest.py"]
+# Start webserver on port 80
+CMD ["waitress-serve", "--port", "80", "--host", "0.0.0.0", "--call", "app:create_app"]

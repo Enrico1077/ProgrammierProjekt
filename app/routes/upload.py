@@ -8,9 +8,12 @@ bp = Blueprint('upload', __name__, url_prefix='/kmeans')
 def handle_cvs_upload(parameter_k):
     """ this function handles an upload of a csv file """
     try:
-        int(parameter_k)
+        param_k = int(parameter_k)
+        if param_k < 1:
+            resp = make_response('The passed parameter k must be at least one.', 400)
+            return resp
     except ValueError:
-        resp = make_response('The passed parameter k was not an integer.', 400)
+        resp = make_response('The passed parameter k must be an integer.', 400)
         return resp
 
     if 'file' in request.files:
@@ -26,9 +29,12 @@ def handle_cvs_upload(parameter_k):
 def handle_json_jpload(parameter_k):
     """ this function handles an upload of a json file """
     try:
-        int(parameter_k)
+        param_k = int(parameter_k)
+        if param_k < 1:
+            resp = make_response('The passed parameter k must be at least one.', 400)
+            return resp
     except ValueError:
-        resp = make_response('The passed parameter k was not an integer.', 400)
+        resp = make_response('The passed parameter k must be an integer.', 400)
         return resp
 
     if 'file' in request.files:

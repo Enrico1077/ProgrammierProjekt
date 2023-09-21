@@ -40,6 +40,12 @@ waitress-serve --port 5000 --host 0.0.0.0 --call app:create_app
 
 ## API
 
+**Test API (HTTP GET):**
+
+```
+/hello
+```
+
 **Upload a CSV file (HTTP POST):**
 The body must have a field called "file" which contains a CSV file as value.
 

@@ -74,19 +74,65 @@ def AverageMisstake(DatenPunkte, Metric):
             AvgMiss+=ManhattenDistance(Dp0,Dp0.getNextCentroid())
     AvgMiss/=len(DatenPunkte)
     return AvgMiss
+
+#kMeans-Agorithmus für ein Festes k (kein Elbow)
+def KmeansFestesK(_Datenpunkte, _k, _Centroid_count, _Dimension, _MaxValue, _LenMes):
+    #Start des Algorithmuses
+    Zentroide=randData(_Centroid_count,_Dimension, _MaxValue)
+    for i in range(_k):
+
+        #Zuweisung der Datenpunkte zu den Zentroiden
+        MatchDpZent(_Datenpunkte,Zentroide,_LenMes)
+
+        #Berechnung des alten allgemeinen Fehlers
+        oldMiss=AverageMisstake(_Datenpunkte, _LenMes)
+
+        #Zentroide in die Mitte der zugewiesenden Datenpunkte setzen
+        newCentroids(_Datenpunkte,Zentroide)
+
+        #Berechnung der prozendtualen Abnahme des Fehlers
+        kMiss=AverageMisstake(_Datenpunkte, LenMes)
+        ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
+        print("k= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
     
+
+#kMeans-Agorithmus mit dem Elbow-Verfahren
+def KmeansAutoK(_Datenpunkte, _kstop, _Centroid_count, _Dimension, _MaxValue, _LenMes, _kKrit):
+    #Start des Algorithmuses
+    Zentroide=randData(_Centroid_count, _Dimension, _MaxValue)
+    for i in range(_kstop):
+
+        #Zuweisung der Datenpunkte zu den Zentroiden
+        MatchDpZent(_Datenpunkte,Zentroide,_LenMes)
+
+        #Berechnung des alten allgemeinen Fehlers
+        oldMiss=AverageMisstake(_Datenpunkte, _LenMes)
+
+        #Zentroide in die Mitte der zugewiesenden Datenpunkte setzen
+        newCentroids(_Datenpunkte,Zentroide)
+
+        #Berechnung der prozendtualen Abnahme des Fehlers
+        kMiss=AverageMisstake(_Datenpunkte, LenMes)
+        ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
+        print("k= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        if ProzVerbes<_kKrit:
+            break
      
 
 ####MainAblauf####
 
 #Parameter
-Anzahl=10000        #Anzahl von zufällig erzeugenten Testwerten
+Anzahl=1000         #Anzahl von zufällig erzeugenten Testwerten
 MaxValue=1000       #Maximaler Wert von Zentroiden und zufälligen Werten
-Dimension=3         #Anzahl der Dimensionen von Werten und Zentroiden
-Centroid_count=50   #Anzahl der Zentroide
-k=20                #k
+Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
+Centroid_count=10   #Anzahl der Zentroide
 
-Repeats=1           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+k=10                #k (Anzahl der Wiederholungen im Algorithmus)
+autoK=0             #"0" für k Wiederholungen, "1" für Elbow-Verfahren
+kKrit=0.1           #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "kKrit" ist (Elbow)
+stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
+
+Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #0 für Euklid, 1 für Manhatten
 
 #Random-Werte
@@ -94,30 +140,14 @@ Datenpunkte=randData(Anzahl, Dimension, MaxValue)
 
 avgMiss=-1
 BestData=None
-oldMiss=-1
 for j in range(Repeats):
-
-    #Start des Algorithmuses
-    Zentroide=randData(Centroid_count,Dimension, MaxValue)
-    for i in range(k):
-
-        #Zuweisung der Datenpunkte zu den Zentroiden
-        MatchDpZent(Datenpunkte,Zentroide,LenMes)
-
-        #Zentroide in die Mitte der zugewiesenden Datenpunkte setzen
-        newCentroids(Datenpunkte,Zentroide)
-
-        #Berechnung der prozendtualen Abnahme des Fehlers
-        kMiss=AverageMisstake(Datenpunkte, LenMes)
-        if i>0:
-            ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-            print("k= "+str(i)+" Verbesserung in %: "+str(ProzVerbes))
-        oldMiss=kMiss
-
-
+    if autoK==0:
+        KmeansFestesK(Datenpunkte,k,Centroid_count,Dimension,MaxValue,LenMes)
+    else:
+        KmeansAutoK(Datenpunkte,stopK,Centroid_count,Dimension,MaxValue,LenMes,kKrit)
     #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
     curAvgMiss=AverageMisstake(Datenpunkte, LenMes)
-    print("Wiederholung: "+str(j)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
+    print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
     if (avgMiss==-1 or (avgMiss>curAvgMiss)):
         avgMiss=curAvgMiss
         BestData=Datenpunkte

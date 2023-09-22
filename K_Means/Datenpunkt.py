@@ -1,8 +1,6 @@
 import numpy as np
 
 class Datenpunkt():
-
-
     #Methoden 
     def __init__(self, position):
         self.__position=position

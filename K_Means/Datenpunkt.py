@@ -17,6 +17,6 @@ class Datenpunkt():
     def setPosition(self,position):
         self.__position=position
 
-    def getNextCentroid(self, Centroid):
+    def setNextCentroid(self, Centroid):
          self.__nextCentroid = Centroid
         

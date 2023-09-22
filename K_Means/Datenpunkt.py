@@ -19,4 +19,5 @@ class Datenpunkt():
 
     def setNextCentroid(self, Centroid):
          self.__nextCentroid = Centroid
+
         

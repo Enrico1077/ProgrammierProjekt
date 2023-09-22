@@ -20,7 +20,16 @@ def EuklidDistance(Datenpunkt1, Datenpunkt2):
     SqrLen=0
     for i in range(Loc1.size):
          SqrLen+=(Loc1[i]-Loc2[i])**2
-    return (SqrLen**0.5)    
+    return (SqrLen**0.5) 
+
+def ManhattenDistance(Dp1,Dp2):
+    Loc1=Dp1.getPosition()
+    Loc2=Dp2.getPosition()
+    Distance=0
+    for i in range (Loc1.size):
+        Distance+=abs(Loc1[i]-Loc2[i])
+    return Distance
+
 
 #Findet aus einem Array voller Datenpunkte die Mitte
 def FindMid(Datenpunkte):
@@ -34,13 +43,16 @@ def FindMid(Datenpunkte):
     return MidPoint
 
 #Zuweisung der Datenpunkte zu den Zentroiden
-def MatchDpZent(Datenpunkte, Zentroide):
+def MatchDpZent(Datenpunkte, Zentroide, Metric):
     for Dp0 in Datenpunkte:
-        minLen=EuklidDistance(Dp0,Zentroide[0])
-        Dp0.setNextCentroid(Zentroide[0])
+        minLen=-1
         for i in range(len(Zentroide)):
-            aktLen=EuklidDistance(Dp0,Zentroide[i])
-            if(minLen>aktLen):
+            aktLen=-1
+            if Metric==0:
+                aktLen=EuklidDistance(Dp0,Zentroide[i])
+            else:
+                aktLen=ManhattenDistance(Dp0,Zentroide[i])
+            if(minLen>aktLen or minLen==-1):
                 minLen=aktLen
                 Dp0.setNextCentroid(Zentroide[i])
 
@@ -53,10 +65,13 @@ def newCentroids(Datenpunkte, Zentroide):
         if len(MatchinDP)>0:
             Zentroide[j].setPosition(FindMid(MatchinDP))
 
-def AverageMisstake(DatenPunkte):
+def AverageMisstake(DatenPunkte, Metric):
     AvgMiss=0
     for Dp0 in DatenPunkte:
-        AvgMiss+=EuklidDistance(Dp0,Dp0.getNextCentroid())
+        if Metric==0:
+            AvgMiss+=EuklidDistance(Dp0,Dp0.getNextCentroid())
+        else:
+            AvgMiss+=ManhattenDistance(Dp0,Dp0.getNextCentroid())
     AvgMiss/=len(DatenPunkte)
     return AvgMiss
     
@@ -65,28 +80,52 @@ def AverageMisstake(DatenPunkte):
 ####MainAblauf####
 
 #Parameter
-Anzahl=100
-MaxValue=100
-Dimension=2
-Centroid_count=1
-k=10
+Anzahl=10000        #Anzahl von zufällig erzeugenten Testwerten
+MaxValue=1000       #Maximaler Wert von Zentroiden und zufälligen Werten
+Dimension=3         #Anzahl der Dimensionen von Werten und Zentroiden
+Centroid_count=50   #Anzahl der Zentroide
+k=20                #k
+
+Repeats=1           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+LenMes=0            #0 für Euklid, 1 für Manhatten
 
 #Random-Werte
 Datenpunkte=randData(Anzahl, Dimension, MaxValue)
 
-#Start des Algorithmuses
-Zentroide=randData(Centroid_count,Dimension, MaxValue)
-for i in range(k):
+avgMiss=-1
+BestData=None
+oldMiss=-1
+for j in range(Repeats):
 
-    #Zuweisung der Datenpunkte zu den Zentroiden
-    MatchDpZent(Datenpunkte,Zentroide)
+    #Start des Algorithmuses
+    Zentroide=randData(Centroid_count,Dimension, MaxValue)
+    for i in range(k):
 
-    #Zentroide in die Mitte der zugewiesenden Datenpunkte setzen
-    newCentroids(Datenpunkte,Zentroide)
+        #Zuweisung der Datenpunkte zu den Zentroiden
+        MatchDpZent(Datenpunkte,Zentroide,LenMes)
 
-    #Ergebnisse für aktuelles K
-    print("Aktuelles Z = "+str(i+1))
-    print("Allgemeiner Fehler = "+str(AverageMisstake(Datenpunkte)))
+        #Zentroide in die Mitte der zugewiesenden Datenpunkte setzen
+        newCentroids(Datenpunkte,Zentroide)
+
+        #Berechnung der prozendtualen Abnahme des Fehlers
+        kMiss=AverageMisstake(Datenpunkte, LenMes)
+        if i>0:
+            ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
+            print("k= "+str(i)+" Verbesserung in %: "+str(ProzVerbes))
+        oldMiss=kMiss
+
+
+    #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
+    curAvgMiss=AverageMisstake(Datenpunkte, LenMes)
+    print("Wiederholung: "+str(j)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
+    if (avgMiss==-1 or (avgMiss>curAvgMiss)):
+        avgMiss=curAvgMiss
+        BestData=Datenpunkte
+    for Dp0 in Datenpunkte:
+        Dp0.setNextCentroid(None)
+
+print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+        
     
     
             

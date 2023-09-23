@@ -21,7 +21,7 @@ To add or remove dependencies to the project, edit the file "requirements.txt".
 To lint all python files:
 
 ```
-pylint app/*.py
+pylint app/*/*.py
 ```
 
 Run the app in dev mode:
@@ -40,8 +40,22 @@ waitress-serve --port 5000 --host 0.0.0.0 --call app:create_app
 
 ## API
 
-Hello-World-Message
+**Test API (HTTP GET):**
 
 ```
-http://localhost:5000/api/hello
+/hello
+```
+
+**Upload a CSV file (HTTP POST):**
+The body must have a field called "file" which contains a CSV file as value.
+
+```
+/kmeans/csv/<parameter_k>
+```
+
+**Upload a JSON file (HTTP POST):**
+The body must have a field called "file" which contains a JSON file as value.
+
+```
+/kmeans/json/<parameter_k>
 ```

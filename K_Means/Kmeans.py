@@ -1,7 +1,8 @@
 import Datenpunkt as dp
 import numpy as np
 import random
-
+import matplotlib.pyplot as plt
+import copy 
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von 0 bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -165,23 +166,62 @@ def KmeansAutoK(_Datenpunkte, _kstop, _Centroid_count, _Dimension, _MaxValue, _L
         if ProzVerbes<_kKrit:
             break
 
+#---------------------Methode von Chat-GPT zum Testen(Visualisieren)---------------------------------------------
+
+def visualize_clusters(data_points):
+    # Extrahieren Sie die Positionen der Datenpunkte und ihre Cluster-Zuordnungen
+    positions = np.array([dp.getPosition() for dp in data_points])
+    cluster_ids = [dp.getNextCentroid().getPosition() if dp.getNextCentroid() is not None else None for dp in data_points]
+
+    # Erstellen Sie eine Liste von eindeutigen Cluster-IDs
+    unique_clusters = np.unique(cluster_ids, axis=0)
+
+    # Erstellen Sie eine Farbpalette für die Cluster
+    colors = plt.cm.get_cmap('tab10', len(unique_clusters))
+
+    # Erstellen Sie ein Streudiagramm für die Datenpunkte und verwenden Sie Farben basierend auf den Clustern
+    for i, cluster_id in enumerate(unique_clusters):
+        # Filtern Sie die Datenpunkte, die zu diesem Cluster gehören
+        cluster_indices = [j for j, c_id in enumerate(cluster_ids) if np.array_equal(c_id, cluster_id)]
+        cluster_points = positions[cluster_indices]
+
+        plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {i}', c=colors(i), alpha=0.5, marker='o')
+
+    # Extrahieren Sie die Positionen der Zentroide aus den Datenpunkten
+    centroid_positions = np.array([dp.getNextCentroid().getPosition() for dp in data_points if dp.getNextCentroid() is not None])
+
+    # Fügen Sie die Zentroide hinzu
+    plt.scatter(centroid_positions[:, 0], centroid_positions[:, 1], marker='x', color='red', s=100, label='Zentroide')
+
+    plt.xlabel('X-Achse')
+    plt.ylabel('Y-Achse')
+    plt.title('k-Means Clustering Ergebnisse mit Farben pro Cluster und Zentroiden')
+
+    # Fügen Sie eine Legende hinzu
+    plt.legend()
+
+    # Zeigen Sie das Diagramm an
+    plt.show()
+
+
+
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
 
 ####MainAblauf####
 
 #Parameter
-Anzahl=1000         #Anzahl von zufällig erzeugenten Testwerten
-MaxValue=1000       #Maximaler Wert von Zentroiden und zufälligen Werten
+Anzahl=10000         #Anzahl von zufällig erzeugenten Testwerten
+MaxValue=100       #Maximaler Wert von Zentroiden und zufälligen Werten
 MinValue=0
 Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
-Centroid_count=10   #Anzahl der Zentroide
+Centroid_count=5   #Anzahl der Zentroide
 
 k=20                #k (Anzahl der Wiederholungen im Algorithmus)
 autoK=1             #"0" für k Wiederholungen, "1" für Elbow-Verfahren
 kKrit=0.1           #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "kKrit" ist (Elbow)
 stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+Repeats=1           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #"0" für Euklid, "1" für Manhatten
 normali=0           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
@@ -210,11 +250,14 @@ for j in range(Repeats):
     print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
     if (avgMiss==-1 or (avgMiss>curAvgMiss)):
         avgMiss=curAvgMiss
-        BestData=Datenpunkte
+        BestData=copy.deepcopy(Datenpunkte)
     for Dp0 in Datenpunkte:
         Dp0.setNextCentroid(None)
 
 print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+
+if Dimension==2:
+    visualize_clusters(BestData)
         
     
     

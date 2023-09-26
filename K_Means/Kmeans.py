@@ -4,13 +4,23 @@ import random
 import matplotlib.pyplot as plt
 import copy 
 
-#Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von 0 bis "MaxValue"
+#Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
     DataArray=[]
     for i in range(Count):
         Location=np.empty(0)
         for j in range(Dimensions):
                 Location=np.append(Location,random.uniform(MinVal,MaxVal))
+        DataArray.append(dp.Datenpunkt(Location))
+    return DataArray
+
+#Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue" für jede Dimension
+def randArrData(Count, Dimensions, MaxVal, MinVal): 
+    DataArray=[]
+    for i in range(Count):
+        Location=np.empty(0)
+        for j in range(Dimensions):
+                Location=np.append(Location,random.uniform(MinVal[j],MaxVal[j]))
         DataArray.append(dp.Datenpunkt(Location))
     return DataArray
 
@@ -69,22 +79,22 @@ def newCentroids(Datenpunkte, Zentroide):
 
 #Berechnet die maximalen Werte jeder Dimension 
 def maxLocation(DataPoints):
-    maxLoc=DataPoints[0].getPosition()[0]
+    maxLoc=copy.deepcopy(DataPoints[0].getPosition())
     for dp0 in DataPoints:
-        aktLoc=dp0.getPosition()
+        aktLoc=copy.deepcopy(dp0.getPosition())
         for i in range(aktLoc.size):
-            if maxLoc<aktLoc[i]:
-                maxLoc=aktLoc[1]
+            if maxLoc[i]<aktLoc[i]:
+                maxLoc[i]=aktLoc[i]
     return maxLoc
 
 #Berechnet die minimalen Werte jeder Dimension 
 def minLocation(DataPoints):
-    minLoc=DataPoints[0].getPosition()[0]
+    minLoc=copy.deepcopy(DataPoints[0].getPosition())
     for dp0 in DataPoints:
-        aktLoc=dp0.getPosition()
+        aktLoc=copy.deepcopy(dp0.getPosition())
         for i in range(aktLoc.size):
-            if minLoc>aktLoc[i]:
-                minLoc=aktLoc[1]
+            if minLoc[i]>aktLoc[i]:
+                minLoc[i]=aktLoc[i]
     return minLoc
 
 #Min-Max-Normalisiert die Datenpunkte
@@ -92,25 +102,30 @@ def MinMaxNorm(DataPoints):
     maxLoc=maxLocation(DataPoints)
     minLoc=minLocation(DataPoints)
     for dp0 in DataPoints:
-        Locs=dp0.getPosition()
+        Locs=copy.deepcopy(dp0.getPosition())
         for i in range(Locs.size):
-            Locs[i]=((Locs[i]-minLoc)/(maxLoc-minLoc))
+            Locs[i]=((Locs[i]-minLoc[i])/(maxLoc[i]-minLoc[i]))
         dp0.setPosition(Locs)
 
 #z-Normalisiert die Datenpunkte
 def z_Norm(DataPoints):
-    AllValues=np.empty(0)
+    avg=FindMid(DataPoints) 
+    allValues=retAllPos(DataPoints)
+    stdArray=[]
+    for i in range (allValues[0].size):
+        stdArray.append(np.std(allValues[:,i]))
     for dp0 in DataPoints:
-        AllValues=np.append(AllValues,dp0.getPosition())
-    avg=np.average(AllValues)
-    stdab=np.std(AllValues)
-    for dp0 in DataPoints:
-        Locs=dp0.getPosition()
+        Locs=copy.deepcopy(dp0.getPosition())
         for i in range(Locs.size):
-            Locs[i]=((Locs[i]-avg)/stdab)
+            Locs[i]=((Locs[i]-avg[i])/stdArray[i])
         dp0.setPosition(Locs)
-    
-    
+
+#Gibt ein 2d-Array zurück in welchem die Positionen eines jeden Datenpunktes aufgelistet sind  
+def retAllPos(DatapPoints):
+    allPos=[]
+    for dp0 in DatapPoints:
+        allPos.append(dp0.getPosition())
+    return np.array(allPos)
 
 #Brechnet den Durchschnittlichen Abstand zwischen Datenpunkten und dem zugeordneten Zentruid
 def AverageMisstake(DatenPunkte, Metric):
@@ -126,7 +141,7 @@ def AverageMisstake(DatenPunkte, Metric):
 #kMeans-Agorithmus für ein Festes k (kein Elbow)
 def KmeansFestesK(_Datenpunkte, _k, _Centroid_count, _Dimension, _MaxValue, _LenMes, _MinValue):
     #Start des Algorithmuses
-    Zentroide=randData(_Centroid_count,_Dimension, _MaxValue, _MinValue)
+    Zentroide=randArrData(_Centroid_count,_Dimension, _MaxValue, _MinValue)
     for i in range(_k):
 
         #Zuweisung der Datenpunkte zu den Zentroiden
@@ -142,12 +157,13 @@ def KmeansFestesK(_Datenpunkte, _k, _Centroid_count, _Dimension, _MaxValue, _Len
         kMiss=AverageMisstake(_Datenpunkte, LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         print("k= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        
     
 
 #kMeans-Agorithmus mit dem Elbow-Verfahren
 def KmeansAutoK(_Datenpunkte, _kstop, _Centroid_count, _Dimension, _MaxValue, _LenMes, _kKrit, _MinValue):
     #Start des Algorithmuses
-    Zentroide=randData(_Centroid_count, _Dimension, _MaxValue, _MinValue)
+    Zentroide=randArrData(_Centroid_count, _Dimension, _MaxValue, _MinValue)
     for i in range(_kstop):
 
         #Zuweisung der Datenpunkte zu den Zentroiden
@@ -210,13 +226,13 @@ def visualize_clusters(data_points):
 ####MainAblauf####
 
 #Parameter
-Anzahl=10000         #Anzahl von zufällig erzeugenten Testwerten
+Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
 MaxValue=100       #Maximaler Wert von Zentroiden und zufälligen Werten
 MinValue=0
 Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
-Centroid_count=5   #Anzahl der Zentroide
+Centroid_count=10   #Anzahl der Zentroide
 
-k=20                #k (Anzahl der Wiederholungen im Algorithmus)
+k=10                 #k (Anzahl der Wiederholungen im Algorithmus)
 autoK=1             #"0" für k Wiederholungen, "1" für Elbow-Verfahren
 kKrit=0.1           #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "kKrit" ist (Elbow)
 stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
@@ -254,10 +270,15 @@ for j in range(Repeats):
     for Dp0 in Datenpunkte:
         Dp0.setNextCentroid(None)
 
+
 print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+
 
 if Dimension==2:
     visualize_clusters(BestData)
+
+
+
         
     
     

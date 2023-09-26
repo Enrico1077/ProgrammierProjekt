@@ -3,6 +3,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
+import DataHandling
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -237,12 +238,13 @@ autoK=1             #"0" für k Wiederholungen, "1" für Elbow-Verfahren
 kKrit=0.1           #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "kKrit" ist (Elbow)
 stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-Repeats=1           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #"0" für Euklid, "1" für Manhatten
 normali=0           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
 #Random-Werte(Datenpunkte)
-Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
+#Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
+Datenpunkte =DataHandling.getData("K_Means\snakes_count.csv","c")
 if(normali==1):
     MinMaxNorm(Datenpunkte)
 elif(normali==2):
@@ -283,15 +285,5 @@ if Dimension==2:
     
     
             
-    
-               
-
-
-
-
-
-
-
-    
-          
+         
      

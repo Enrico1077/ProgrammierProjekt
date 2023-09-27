@@ -1,6 +1,10 @@
 """ module to handle incoming http post requests """
 
+import csv
+import io
+import json
 from flask import (Blueprint, make_response, request)
+from werkzeug.datastructures import FileStorage
 
 bp = Blueprint('upload', __name__, url_prefix='/kmeans')
 
@@ -19,7 +23,28 @@ def handle_cvs_upload(parameter_k):
     if 'file' in request.files:
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
+            try:
+                csv_file = filestorage_to_fileobject(file)
+
+                # creating a csv reader object
+                csvreader = csv.DictReader(csv_file)
+                # converting the data into an array of JSON objects (one JSON object per line)
+                # pylint: disable=unused-variable
+                data = list(csvreader)
+
+                # Closing the file without saving them to the hard disk.
+                csv_file.close()
+            # pylint: disable=bare-except
+            except:
+                resp = make_response('An unexpected error occurred.', 500)
+                return resp
+            finally:
+                # Closing the file without saving them to the hard disk.
+                csv_file.close()
+
             # To-Do: Hier die weitere Verarbeitung der hochgeladenen Datei hinzufügen
+
+            # To-Do: Verarbeitete Daten anstatt OK zurückgeben
             return "OK"
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No CSV file was uploaded.', 400)
@@ -40,8 +65,37 @@ def handle_json_jpload(parameter_k):
     if 'file' in request.files:
         file = request.files.get('file')
         if file.filename.lower().endswith(".json"):
+            try:
+                json_file = filestorage_to_fileobject(file)
+                # pylint: disable=unused-variable
+                json_data = json.loads(json_file.read())
+                # Closing the file without saving them to the hard disk.
+                json_file.close()
+            # pylint: disable=bare-except
+            except:
+                resp = make_response('An unexpected error occurred.', 500)
+                return resp
+            finally:
+                # Closing the file without saving them to the hard disk.
+                json_file.close()
+
             # To-Do: Hier die weitere Verarbeitung der hochgeladenen Datei hinzufügen
+
+            # To-Do: Verarbeitete Daten anstatt OK zurückgeben
+
             return "OK"
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No JSON file was uploaded.', 400)
     return resp
+
+def filestorage_to_fileobject(filestorage: FileStorage) -> io.TextIOWrapper:
+    """ this function converts a Flask FileStorage object into a FileObject """
+    # Returns a bytes stream of the data of the uploaded file
+    temp_file = filestorage.stream
+    # Set reading pointer to start position
+    temp_file.seek(0)
+    # Conversion of the stream into readable bytes
+    temp_file = io.BytesIO(temp_file.read())
+    # Conversion of the data into a file object readable in text mode
+    temp_file = io.TextIOWrapper(temp_file, encoding='utf-8')
+    return temp_file

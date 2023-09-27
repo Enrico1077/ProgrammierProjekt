@@ -228,7 +228,7 @@ def visualize_clusters(data_points):
 
 #Parameter
 Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
-MaxValue=100       #Maximaler Wert von Zentroiden und zufälligen Werten
+MaxValue=100       #Maximaler Wert von zufälligen Werten
 MinValue=0
 Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
 Centroid_count=10   #Anzahl der Zentroide
@@ -240,11 +240,11 @@ stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung 
 
 Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #"0" für Euklid, "1" für Manhatten
-normali=0           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
 #Random-Werte(Datenpunkte)
 #Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
-Datenpunkte =DataHandling.getData("K_Means\snakes_count.csv","c")
+Datenpunkte =DataHandling.getData("app\K_Means\snakes_count.csv","c")
 if(normali==1):
     MinMaxNorm(Datenpunkte)
 elif(normali==2):

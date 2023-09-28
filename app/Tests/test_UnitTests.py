@@ -22,11 +22,11 @@ def test_KmeansFile():
     sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
     import numpy as np
     import Datenpunkt as dp
-    from Kmeans import EuklidDistance
+    import kmeans
 
     dp0=dp.Datenpunkt(np.array(0,0))
     dp1=dp.Datenpunkt(np.array(2,2))
-    result=EuklidDistance(dp0,dp1)
+    result=kmeans.EuklidDistance(dp0,dp1)
     assert result==8**0.5
 
 def ranData():

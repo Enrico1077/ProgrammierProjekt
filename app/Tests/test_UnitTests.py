@@ -16,7 +16,8 @@ def test_DpExcential():
 
     dp0 = dp.Datenpunkt(np.array([2,3]))
     location= dp0.getPosition()
-    assert np.array([2,3])
-    return location
+    diff=location[0]-location[1]
+    assert -1
+    return diff
 
 

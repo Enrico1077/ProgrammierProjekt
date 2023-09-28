@@ -1,7 +1,6 @@
 ####In dieser Datei können Tests definiert werden######
-
-from app.K_Means import Datenpunkt as dp
-from app.K_Means import Kmeans
+ 
+from app.K_Means import Datenpunkte as dp
 import numpy as np
 
 def test_BeispielTest():

@@ -5,8 +5,7 @@
 
 def test_BeispielTest():
     add = 1+1
-    assert 2
-    return add
+    assert add ==2
 
 def test_DpExcential():
     import numpy as np
@@ -17,7 +16,6 @@ def test_DpExcential():
     dp0 = dp.Datenpunkt(np.array([2,3]))
     location= dp0.getPosition()
     diff=location[0]-location[1]
-    assert -1
-    return diff
+    assert diff==-1
 
 

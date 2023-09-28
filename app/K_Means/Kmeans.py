@@ -255,6 +255,8 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 def kmeansMain(k,Elbow,maxK, inaccu, Zyklen, autoZyk, ZykKrit, stopZyk, Repeats, LenMes, normali, InputData):
 ####MainAblauf####
 
+    #InputData-> Daten aus CSV/JASON Datei
+
     #Parameter
     IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
     Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten

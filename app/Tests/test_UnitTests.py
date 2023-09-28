@@ -1,5 +1,8 @@
 ####In dieser Datei können Tests definiert werden######
  
+import sys
+sys.path.append("app\\K_Means")
+
 from app.K_Means import Datenpunkte as dp
 import numpy as np
 

@@ -21,22 +21,36 @@ def getData(InputDatei, Dateityp):
         with open(InputDatei, 'r') as datei:
             DatenArray = json.load(datei)
 
-    #Dictionary -> FloatArray
+    #Dictionary -> Float-Array
+    OrdinaryDict=dict([])
     OutArray=[]
     for Zeile in DatenArray:
         vals=list(Zeile.values())
         newLine=[]
         for single in vals:
-            newLine.append(float(single))
+            try:
+                newLine.append(float(single))
+            except:
+                if single in OrdinaryDict:
+                    newLine.append(OrdinaryDict[single])
+                else:
+                    newVal=float(len(OrdinaryDict.values())+1)
+                    OrdinaryDict[single]=newVal
+                    newLine.append(newVal)
         OutArray.append(newLine)
 
+
     #FloatArray -> DataPoint-Array
+    print(OutArray)
+    print(OrdinaryDict)
     NewDataPoints=[]
     for Posi in OutArray:
         dp0= dp.Datenpunkt(np.array(Posi))
         NewDataPoints.append(dp0)
 
     return NewDataPoints
+
+
 
 
 

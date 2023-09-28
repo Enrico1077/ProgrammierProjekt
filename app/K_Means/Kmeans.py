@@ -105,7 +105,10 @@ def MinMaxNorm(DataPoints):
     for dp0 in DataPoints:
         Locs=copy.deepcopy(dp0.getPosition())
         for i in range(Locs.size):
-            Locs[i]=((Locs[i]-minLoc[i])/(maxLoc[i]-minLoc[i]))
+            if minLoc[i]==maxLoc[i]:
+                Locs[i]=1
+            else:
+                Locs[i]=((Locs[i]-minLoc[i])/(maxLoc[i]-minLoc[i]))
         dp0.setPosition(Locs)
 
 #z-Normalisiert die Datenpunkte
@@ -118,7 +121,10 @@ def z_Norm(DataPoints):
     for dp0 in DataPoints:
         Locs=copy.deepcopy(dp0.getPosition())
         for i in range(Locs.size):
-            Locs[i]=((Locs[i]-avg[i])/stdArray[i])
+            if stdArray[i]==0:
+                Locs[i]=0
+            else:
+                Locs[i]=((Locs[i]-avg[i])/stdArray[i])
         dp0.setPosition(Locs)
 
 #Gibt ein 2d-Array zurück in welchem die Positionen eines jeden Datenpunktes aufgelistet sind  
@@ -254,7 +260,7 @@ IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
 Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
 MaxValue=100       #Maximaler Wert von zufälligen Werten
 MinValue=0
-Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
+Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
 k=10                #Anzahl der Zentroide (k)
 Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
@@ -266,15 +272,16 @@ autoZyk=0           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
 ZykKrit=0.1         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
 stopZyk=100         #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+Repeats=15           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #"0" für Euklid, "1" für Manhatten
-normali=1           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
 
 if IsRandom==1:
     Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
 else:
-    Datenpunkte =DataHandling.getData("app\K_Means\snakes_count.csv","c")
+    Datenpunkte =DataHandling.getData("app\K_Means\cities.csv","c")
+    Dimension=Datenpunkte[0].getPosition().size
 
 if(normali==1):
     MinMaxNorm(Datenpunkte)

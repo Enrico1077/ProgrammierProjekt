@@ -3,7 +3,7 @@
 import sys
 sys.path.append("app\\K_Means")
 
-from app.K_Means import Datenpunkte as dp
+import Datenpunkt as dp
 import numpy as np
 
 def test_BeispielTest():

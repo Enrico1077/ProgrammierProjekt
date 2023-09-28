@@ -1,7 +1,7 @@
 ####In dieser Datei können Tests definiert werden######
  
 
-import numpy as np
+
 
 def test_BeispielTest():
     add = 1+1
@@ -9,6 +9,7 @@ def test_BeispielTest():
     return add
 
 def test_DpExcential():
+    import numpy as np
     import sys
     sys.path.append("app\\K_Means")
     import Datenpunkt as dp

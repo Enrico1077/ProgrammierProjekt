@@ -10,8 +10,6 @@ def test_BeispielTest():
 
 def test_DpExcential():
     import numpy as np
-    import sys
-    sys.path.append("app\\K_Means")
     import Datenpunkt as dp
 
     dp0 = dp.Datenpunkt(np.array([2,3]))

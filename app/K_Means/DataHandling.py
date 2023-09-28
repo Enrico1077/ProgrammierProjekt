@@ -50,6 +50,39 @@ def getData(InputDatei, Dateityp):
 
     return NewDataPoints
 
+def getAPIData(DatenArray):      
+      
+
+    #Dictionary -> Float-Array
+    OrdinaryDict=dict([])
+    OutArray=[]
+    for Zeile in DatenArray:
+        vals=list(Zeile.values())
+        newLine=[]
+        for single in vals:
+            try:
+                newLine.append(float(single))
+            except:
+                if single in OrdinaryDict:
+                    newLine.append(OrdinaryDict[single])
+                else:
+                    newVal=float(len(OrdinaryDict.values())+1)
+                    OrdinaryDict[single]=newVal
+                    newLine.append(newVal)
+        OutArray.append(newLine)
+
+
+    #FloatArray -> DataPoint-Array
+    print(OutArray)
+    print(OrdinaryDict)
+    NewDataPoints=[]
+    for Posi in OutArray:
+        dp0= dp.Datenpunkt(np.array(Posi))
+        NewDataPoints.append(dp0)
+
+    print("Klappt!")
+    return NewDataPoints
+
 
 
 

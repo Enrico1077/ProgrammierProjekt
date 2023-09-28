@@ -323,13 +323,6 @@ else:
     
 
 
-        
-        
-
-
-
-
-
 
 if Dimension==2:
     visualize_clusters(bestDp)

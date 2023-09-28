@@ -140,10 +140,10 @@ def AverageMisstake(DatenPunkte, Metric):
     return AvgMiss
 
 #kMeans-Agorithmus für ein Festes k (kein Elbow)
-def KmeansFestesK(_Datenpunkte, _k, _Centroid_count, _Dimension, _MaxValue, _LenMes, _MinValue):
+def KmeansFestesK(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _MinValue):
     #Start des Algorithmuses
-    Zentroide=randArrData(_Centroid_count,_Dimension, _MaxValue, _MinValue)
-    for i in range(_k):
+    Zentroide=randArrData(_k,_Dimension, _MaxValue, _MinValue)
+    for i in range(_Zyklen):
 
         #Zuweisung der Datenpunkte zu den Zentroiden
         MatchDpZent(_Datenpunkte,Zentroide,_LenMes)
@@ -157,15 +157,15 @@ def KmeansFestesK(_Datenpunkte, _k, _Centroid_count, _Dimension, _MaxValue, _Len
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        print("k= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         
     
 
-#kMeans-Agorithmus mit dem Elbow-Verfahren
-def KmeansAutoK(_Datenpunkte, _kstop, _Centroid_count, _Dimension, _MaxValue, _LenMes, _kKrit, _MinValue):
+#kMeans-Agorithmus mit dem ZykKrit-Wiederholungen
+def KmeansAutoK(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _ZykKrit, _MinValue):
     #Start des Algorithmuses
-    Zentroide=randArrData(_Centroid_count, _Dimension, _MaxValue, _MinValue)
-    for i in range(_kstop):
+    Zentroide=randArrData(_k, _Dimension, _MaxValue, _MinValue)
+    for i in range(_Zykstop):
 
         #Zuweisung der Datenpunkte zu den Zentroiden
         MatchDpZent(_Datenpunkte,Zentroide,_LenMes)
@@ -179,8 +179,8 @@ def KmeansAutoK(_Datenpunkte, _kstop, _Centroid_count, _Dimension, _MaxValue, _L
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        print("k= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
-        if ProzVerbes<_kKrit:
+        print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        if ProzVerbes<_ZykKrit:
             break
 
 #---------------------Methode von Chat-GPT zum Testen(Visualisieren)---------------------------------------------
@@ -221,30 +221,61 @@ def visualize_clusters(data_points):
     plt.show()
 
 
+def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
+    avgMiss=-1
+    BestData=None
+
+    for j in range(_Repeats):
+        if _autoZyk==0:
+            KmeansFestesK(_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes, _MinValueZet)
+        else:
+            KmeansAutoK(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
+        #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
+        curAvgMiss=AverageMisstake(_DataPoints, _LenMes)
+        print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
+        if (avgMiss==-1 or (avgMiss>curAvgMiss)):
+            avgMiss=curAvgMiss
+            BestData=copy.deepcopy(_DataPoints)
+        for Dp0 in _DataPoints:
+            Dp0.setNextCentroid(None)
+
+    print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+
+    return BestData, avgMiss
+
+
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
 
 ####MainAblauf####
 
 #Parameter
+IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
 Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
 MaxValue=100       #Maximaler Wert von zufälligen Werten
 MinValue=0
 Dimension=2         #Anzahl der Dimensionen von Werten und Zentroiden
-Centroid_count=10   #Anzahl der Zentroide
 
-k=10                 #k (Anzahl der Wiederholungen im Algorithmus)
-autoK=1             #"0" für k Wiederholungen, "1" für Elbow-Verfahren
-kKrit=0.1           #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "kKrit" ist (Elbow)
-stopK=100           #Abbruch nach "stopK" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
+k=10                #Anzahl der Zentroide (k)
+Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
+maxK=100            #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
+inaccu=0            #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
+
+Zyklen=10           #Anzahl der Wiederholungen im Algorithmus
+autoZyk=0           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
+ZykKrit=0.1         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
+stopZyk=100         #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
 Repeats=5           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
 LenMes=0            #"0" für Euklid, "1" für Manhatten
-normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+normali=1           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
-#Random-Werte(Datenpunkte)
-#Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
-Datenpunkte =DataHandling.getData("app\K_Means\snakes_count.csv","c")
+
+if IsRandom==1:
+    Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
+else:
+    Datenpunkte =DataHandling.getData("app\K_Means\snakes_count.csv","c")
+
 if(normali==1):
     MinMaxNorm(Datenpunkte)
 elif(normali==2):
@@ -255,29 +286,46 @@ MaxValueZet=maxLocation(Datenpunkte)
 MinValueZet=minLocation(Datenpunkte)
 print(MaxValueZet)
 print(MinValueZet)
-avgMiss=-1
-BestData=None
+bestDp=None
+avgDistance=None
 
-for j in range(Repeats):
-    if autoK==0:
-        KmeansFestesK(Datenpunkte,k,Centroid_count,Dimension,MaxValueZet,LenMes, MinValueZet)
-    else:
-        KmeansAutoK(Datenpunkte,stopK,Centroid_count,Dimension,MaxValueZet,LenMes,kKrit, MinValueZet)
-    #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
-    curAvgMiss=AverageMisstake(Datenpunkte, LenMes)
-    print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
-    if (avgMiss==-1 or (avgMiss>curAvgMiss)):
-        avgMiss=curAvgMiss
-        BestData=copy.deepcopy(Datenpunkte)
-    for Dp0 in Datenpunkte:
-        Dp0.setNextCentroid(None)
+if Elbow==0:
+    bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+else:
+
+    
+    DistHistroy=[]
+    for i in range(1,maxK):
+        result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+        DistHistroy.append(avgDistance)
+        print("k="+str(i)+" avg. Distance: "+str(avgDistance))
+        
+
+        if len(DistHistroy)>2:
+            gradient=DistHistroy[len(DistHistroy)-2]-DistHistroy[len(DistHistroy)-3]
+            gradient*=(1+(inaccu/100))
+            print("Steigung: "+str(gradient)+" | Next DP > "+str(DistHistroy[len(DistHistroy)-2]+gradient))
+
+            if ((DistHistroy[len(DistHistroy)-2]+gradient)>=DistHistroy[len(DistHistroy)-1]):
+                bestDp=result
+                avgDistance=DistHistroy[len(DistHistroy)-2]
+                print("Elbow bei k= "+str(i))
+                break
+
+        bestDp=result
+    
 
 
-print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+        
+        
+
+
+
+
 
 
 if Dimension==2:
-    visualize_clusters(BestData)
+    visualize_clusters(bestDp)
 
 
 

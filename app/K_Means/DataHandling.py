@@ -8,7 +8,6 @@ import numpy as np
 #Dateityp: "c" für CSV , "j" für JSON
 def getData(InputDatei, Dateityp):      
     
-
     #File -> Dictionary
     DatenArray=[]
     if Dateityp=="c":
@@ -50,9 +49,10 @@ def getData(InputDatei, Dateityp):
 
     return NewDataPoints
 
+
+
 def getAPIData(DatenArray):      
       
-
     #Dictionary -> Float-Array
     OrdinaryDict=dict([])
     OutArray=[]
@@ -70,7 +70,6 @@ def getAPIData(DatenArray):
                     OrdinaryDict[single]=newVal
                     newLine.append(newVal)
         OutArray.append(newLine)
-
 
     #FloatArray -> DataPoint-Array
     print(OutArray)

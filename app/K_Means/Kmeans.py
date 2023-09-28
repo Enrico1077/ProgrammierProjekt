@@ -183,7 +183,7 @@ def KmeansAutoK(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Zyk
         newCentroids(_Datenpunkte,Zentroide)
 
         #Berechnung der prozendtualen Abnahme des Fehlers
-        kMiss=AverageMisstake(_Datenpunkte, LenMes)
+        kMiss=AverageMisstake(_Datenpunkte, _LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         if ProzVerbes<_ZykKrit:
@@ -252,80 +252,83 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-
+def kmeansMain(k,Elbow,maxK, inaccu, Zyklen, autoZyk, ZykKrit, stopZyk, Repeats, LenMes, normali, InputData):
 ####MainAblauf####
 
-#Parameter
-IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
-Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
-MaxValue=100       #Maximaler Wert von zufälligen Werten
-MinValue=0
-Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
+    #InputData-> Daten aus CSV/JASON Datei
 
-k=10                #Anzahl der Zentroide (k)
-Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
-maxK=100            #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
-inaccu=0            #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
+    #Parameter
+    IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
+    Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
+    MaxValue=100       #Maximaler Wert von zufälligen Werten
+    MinValue=0
+    Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
-Zyklen=10           #Anzahl der Wiederholungen im Algorithmus
-autoZyk=0           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
-ZykKrit=0.1         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
-stopZyk=100         #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
+    #k=10                #Anzahl der Zentroide (k)
+    #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
+    #maxK=100            #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
+    #inaccu=0            #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
 
-Repeats=15           #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
-LenMes=0            #"0" für Euklid, "1" für Manhatten
-normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+    #Zyklen=10           #Anzahl der Wiederholungen im Algorithmus
+    #autoZyk=1           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
+    #ZykKrit=0.5         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
+    #stopZyk=25          #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-
-if IsRandom==1:
-    Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
-else:
-    Datenpunkte =DataHandling.getData("app\K_Means\cities.csv","c")
-    Dimension=Datenpunkte[0].getPosition().size
-
-if(normali==1):
-    MinMaxNorm(Datenpunkte)
-elif(normali==2):
-    z_Norm(Datenpunkte)  
+    #Repeats=5          #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+    #LenMes=0            #"0" für Euklid, "1" für Manhatten
+    #normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
 
-MaxValueZet=maxLocation(Datenpunkte)
-MinValueZet=minLocation(Datenpunkte)
-print(MaxValueZet)
-print(MinValueZet)
-bestDp=None
-avgDistance=None
+    if IsRandom==1:
+        Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
+    else:
+        Datenpunkte =DataHandling.getAPIData(InputData)
+        Dimension=Datenpunkte[0].getPosition().size
 
-if Elbow==0:
-    bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
-else:
+    if(normali==1):
+        MinMaxNorm(Datenpunkte)
+    elif(normali==2):
+        z_Norm(Datenpunkte)  
+
+
+    MaxValueZet=maxLocation(Datenpunkte)
+    MinValueZet=minLocation(Datenpunkte)
+    print(MaxValueZet)
+    print(MinValueZet)
+    bestDp=None
+    avgDistance=None
+
+    if Elbow==0:
+        bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+    else:
 
     
-    DistHistroy=[]
-    for i in range(1,maxK):
-        result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
-        DistHistroy.append(avgDistance)
-        print("k="+str(i)+" avg. Distance: "+str(avgDistance))
+        DistHistroy=[]
+        for i in range(1,maxK):
+            result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+            DistHistroy.append(avgDistance)
+            print("k="+str(i)+" avg. Distance: "+str(avgDistance))
         
 
-        if len(DistHistroy)>2:
-            gradient=DistHistroy[len(DistHistroy)-2]-DistHistroy[len(DistHistroy)-3]
-            gradient*=(1+(inaccu/100))
-            print("Steigung: "+str(gradient)+" | Next DP > "+str(DistHistroy[len(DistHistroy)-2]+gradient))
+            if len(DistHistroy)>2:
+                gradient=DistHistroy[len(DistHistroy)-2]-DistHistroy[len(DistHistroy)-3]
+                gradient*=(1+(inaccu/100))
+                print("Steigung: "+str(gradient)+" | Next DP > "+str(DistHistroy[len(DistHistroy)-2]+gradient))
 
-            if ((DistHistroy[len(DistHistroy)-2]+gradient)>=DistHistroy[len(DistHistroy)-1]):
-                bestDp=result
-                avgDistance=DistHistroy[len(DistHistroy)-2]
-                print("Elbow bei k= "+str(i))
-                break
+                if ((DistHistroy[len(DistHistroy)-2]+gradient)>=DistHistroy[len(DistHistroy)-1]):
+                    bestDp=result
+                    avgDistance=DistHistroy[len(DistHistroy)-2]
+                    print("Elbow bei k= "+str(i))
+                    break
 
-        bestDp=result
+            bestDp=result
+
+    return bestDp, avgDistance
     
 
 
 
-if Dimension==2:
-    visualize_clusters(bestDp)
+
 
 
 

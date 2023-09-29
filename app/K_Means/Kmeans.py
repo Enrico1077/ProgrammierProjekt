@@ -1,9 +1,9 @@
-import Datenpunkt as dp
+from . import Datenpunkt as dp
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-import DataHandling
+from . import DataHandling
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -252,7 +252,7 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(k,Elbow,maxK, inaccu, Zyklen, autoZyk, ZykKrit, stopZyk, Repeats, LenMes, normali, InputData):
+def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei

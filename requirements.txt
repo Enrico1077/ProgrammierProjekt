@@ -2,3 +2,4 @@ flask
 waitress
 pylint
 numpy
+matplotlib

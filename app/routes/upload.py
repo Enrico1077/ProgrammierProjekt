@@ -3,8 +3,9 @@
 import csv
 import io
 import json
-from flask import (Blueprint, make_response, request)
+from flask import (Blueprint, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
+from ..K_Means import Kmeans as kmeans
 
 bp = Blueprint('upload', __name__, url_prefix='/kmeans')
 
@@ -29,7 +30,6 @@ def handle_cvs_upload(parameter_k):
                 # creating a csv reader object
                 csvreader = csv.DictReader(csv_file)
                 # converting the data into an array of JSON objects (one JSON object per line)
-                # pylint: disable=unused-variable
                 data = list(csvreader)
 
                 # Closing the file without saving them to the hard disk.
@@ -42,10 +42,15 @@ def handle_cvs_upload(parameter_k):
                 # Closing the file without saving them to the hard disk.
                 csv_file.close()
 
-            # To-Do: Hier die weitere Verarbeitung der hochgeladenen Datei hinzufügen
+            calculated_data = kmeans.kmeansMain(data, param_k)
 
-            # To-Do: Verarbeitete Daten anstatt OK zurückgeben
-            return "OK"
+            try:
+                return jsonify(calculated_data)
+            except TypeError:
+                resp = make_response(
+                    'Internal server error: The calculated data could not be converted into JSON.',
+                    500)
+                return resp
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No CSV file was uploaded.', 400)
     return resp
@@ -67,7 +72,6 @@ def handle_json_jpload(parameter_k):
         if file.filename.lower().endswith(".json"):
             try:
                 json_file = filestorage_to_fileobject(file)
-                # pylint: disable=unused-variable
                 json_data = json.loads(json_file.read())
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
@@ -79,11 +83,15 @@ def handle_json_jpload(parameter_k):
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
 
-            # To-Do: Hier die weitere Verarbeitung der hochgeladenen Datei hinzufügen
+            calculated_data = kmeans.kmeansMain(json_data, param_k)
 
-            # To-Do: Verarbeitete Daten anstatt OK zurückgeben
-
-            return "OK"
+            try:
+                return jsonify(calculated_data)
+            except TypeError:
+                resp = make_response(
+                    'Internal server error: The calculated data could not be converted into JSON.',
+                    500)
+                return resp
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No JSON file was uploaded.', 400)
     return resp

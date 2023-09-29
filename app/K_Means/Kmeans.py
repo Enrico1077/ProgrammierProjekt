@@ -1,9 +1,9 @@
-import Datenpunkt as dp
+from . import Datenpunkt as dp
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-import DataHandling
+from . import DataHandling
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 

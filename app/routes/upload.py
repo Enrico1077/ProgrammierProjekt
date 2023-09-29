@@ -42,12 +42,14 @@ def handle_cvs_upload(parameter_k):
                 # Closing the file without saving them to the hard disk.
                 csv_file.close()
 
-            calculatedData = kmeans.kmeansMain(data, param_k)
+            calculated_data = kmeans.kmeansMain(data, param_k)
 
             try:
-                return jsonify(calculatedData)
+                return jsonify(calculated_data)
             except TypeError:
-                resp = make_response('Internal server error: The calculated data could not be converted into JSON.', 500)
+                resp = make_response(
+                    'Internal server error: The calculated data could not be converted into JSON.',
+                    500)
                 return resp
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No CSV file was uploaded.', 400)
@@ -81,12 +83,14 @@ def handle_json_jpload(parameter_k):
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
 
-            calculatedData = kmeans.kmeansMain(json_data, param_k)
+            calculated_data = kmeans.kmeansMain(json_data, param_k)
 
             try:
-                return jsonify(calculatedData)
+                return jsonify(calculated_data)
             except TypeError:
-                resp = make_response('Internal server error: The calculated data could not be converted into JSON.', 500)
+                resp = make_response(
+                    'Internal server error: The calculated data could not be converted into JSON.',
+                    500)
                 return resp
     # Return error message if no file was uploaded or it was not the correct file format
     resp = make_response('No JSON file was uploaded.', 400)

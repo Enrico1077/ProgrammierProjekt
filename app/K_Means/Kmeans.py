@@ -146,7 +146,7 @@ def AverageMisstake(DatenPunkte, Metric):
     return AvgMiss
 
 #kMeans-Agorithmus für ein Festes k (kein Elbow)
-def KmeansFestesK(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _MinValue):
+def KmeansFesterZyk(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _MinValue):
     #Start des Algorithmuses
     Zentroide=randArrData(_k,_Dimension, _MaxValue, _MinValue)
     for i in range(_Zyklen):
@@ -168,7 +168,7 @@ def KmeansFestesK(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _Mi
     
 
 #kMeans-Agorithmus mit dem ZykKrit-Wiederholungen
-def KmeansAutoK(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _ZykKrit, _MinValue):
+def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _ZykKrit, _MinValue):
     #Start des Algorithmuses
     Zentroide=randArrData(_k, _Dimension, _MaxValue, _MinValue)
     for i in range(_Zykstop):
@@ -233,9 +233,9 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 
     for j in range(_Repeats):
         if _autoZyk==0:
-            KmeansFestesK(_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes, _MinValueZet)
+            KmeansFesterZyk(_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes, _MinValueZet)
         else:
-            KmeansAutoK(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
+            KmeansAutoZyk(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
         #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
         curAvgMiss=AverageMisstake(_DataPoints, _LenMes)
         print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))

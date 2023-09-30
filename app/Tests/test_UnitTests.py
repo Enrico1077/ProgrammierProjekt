@@ -189,18 +189,20 @@ def test_dpToJson():
 def test_getAPIData():
     input_data = [
         {
-            "PunktDimension0": 1.0, "PunktDimension1": 2.0, "PunktDimension2": 3.0,
-            "ZentDimension0": 0.5, "ZentDimension1": 1.0, "ZentDimension2": 1.5
+            "PunktDimension0": 1.0, "PunktDimension1": 2.0, "PunktDimension2": "A"
         },
         {
-            "PunktDimension0": "A", "PunktDimension1": "B", "PunktDimension2": "C",
-            "ZentDimension0": "X", "ZentDimension1": "Y", "ZentDimension2": "Z"
+            "PunktDimension0": 3.0, "PunktDimension1": 4.0, "PunktDimension2": "C"
+        },
+        {
+            "PunktDimension0": 2.0, "PunktDimension1": 1.0, "PunktDimension2": "A"
         },
     ]
     result = dh.getAPIData(input_data)
     expected_result = [
-        dp.Datenpunkt(np.array([1.0, 2.0, 3.0])),
-        dp.Datenpunkt(np.array([4.0, 5.0, 6.0])),
+        dp.Datenpunkt(np.array([1.0, 2.0, 1.0])),
+        dp.Datenpunkt(np.array([3.0, 4.0, 2.0])),
+        dp.Datenpunkt(np.array([2.0, 1.0, 1.0]))
     ]
     assert len(result) == len(expected_result)
     for i in range(len(result)):

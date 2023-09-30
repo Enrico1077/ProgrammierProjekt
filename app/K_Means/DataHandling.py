@@ -85,6 +85,7 @@ def getAPIData(DatenArray):
 
 
 def dpToJson(Datapoints):
+    #DatenpunktArray->DictArray
 
     Output=[]
     for dp0 in Datapoints:
@@ -97,6 +98,7 @@ def dpToJson(Datapoints):
             curLine["ZentDimension"+str(i)]=zentPosi[i]  
         Output.append(curLine)
     return(Output)
+
 
 
 

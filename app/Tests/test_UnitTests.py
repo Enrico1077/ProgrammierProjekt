@@ -9,9 +9,9 @@ def test_BeispielTest():
 
 def test_DpExcential():
     import numpy as np
-    import sys
-    sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
-    import Datenpunkt as dp
+    #import sys
+    #sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
+    from . import Datenpunkt as dp 
     dp0 = dp.Datenpunkt(np.array([2,3]))
     location= dp0.getPosition()
     diff=location[0]-location[1]

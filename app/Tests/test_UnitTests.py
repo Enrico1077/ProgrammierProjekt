@@ -113,12 +113,12 @@ def test_z_Norm():
     DataPoints = [dp0, dp1, dp2]
 
     Kmeans.z_Norm(DataPoints)
-    expected_dp0 = np.array([0.0, 0.0, 0.0])
-    expected_dp1 = np.array([0.0, 0.0, 0.0])
-    expected_dp2 = np.array([0.0, 0.0, 0.0])
-    assert np.allclose(dp0.getPosition(), expected_dp0)
-    assert np.allclose(dp1.getPosition(), expected_dp1)
-    assert np.allclose(dp2.getPosition(), expected_dp2)
+    expected_avg = np.array([2.0, 2.0, 2.0])
+    expected_std = np.array([1.63299316, 1.63299316, 1.63299316])
+    assert np.array_equal(Kmeans.FindMid(DataPoints), expected_avg) 
+    allValues = Kmeans.retAllPos(DataPoints)
+    for i in range(expected_std.size):
+        assert np.isclose(np.std(allValues[:, i]), expected_std[i])
 
 
 def test_retAllPos():  

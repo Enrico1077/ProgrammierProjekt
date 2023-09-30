@@ -2,6 +2,7 @@
 import numpy as np
 from app.K_Means import Datenpunkt as dp
 from app.K_Means import Kmeans 
+from app.K_Means import DataHandling as dh
 
 
 def test_DpExcential():
@@ -121,7 +122,6 @@ def test_z_Norm():
     assert np.allclose(dp2.getPosition(), expected_dp2)
 
 
-
 def test_retAllPos():  
     dp0 = dp.Datenpunkt(np.array([0, 0, 0]))
     dp1 = dp.Datenpunkt(np.array([2, 2, 2]))
@@ -131,3 +131,77 @@ def test_retAllPos():
     result = Kmeans.retAllPos(DataPoints)
     expected_result = np.array([[0.0, 0.0, 0.0], [2.0, 2.0, 2.0], [4.0, 4.0, 4.0]])
     assert np.array_equal(result, expected_result)
+
+
+def test_AverageMisstake():
+    dp0 = dp.Datenpunkt(np.array([0, 0, 0]))
+    dp1 = dp.Datenpunkt(np.array([2, 2, 2]))
+    dp2 = dp.Datenpunkt(np.array([4, 4, 4]))
+    DataPoints = [dp0, dp1, dp2]
+    centroid0 = dp.Datenpunkt(np.array([1, 1, 1]))
+    centroid1 = dp.Datenpunkt(np.array([3, 3, 3]))
+    centroid2 = dp.Datenpunkt(np.array([5, 5, 5]))
+    dp0.setNextCentroid(centroid0)
+    dp1.setNextCentroid(centroid1)
+    dp2.setNextCentroid(centroid2)
+
+    result_euclidean = Kmeans.AverageMisstake(DataPoints, Metric=0)
+    expected_euclidean = (np.sqrt(3) + np.sqrt(3) + np.sqrt(3)) / 3
+    assert np.isclose(result_euclidean, expected_euclidean)
+
+    result_manhattan = Kmeans.AverageMisstake(DataPoints, Metric=1)
+    expected_manhattan = 3
+    assert np.isclose(result_manhattan, expected_manhattan)
+
+def test_dpToJson():
+    # Erstellen von Beispiel-Datenpunkten
+    dp0 = dp.Datenpunkt(np.array([1, 2, 3]))
+    dp1 = dp.Datenpunkt(np.array([4, 5, 6]))
+    dp2 = dp.Datenpunkt(np.array([7, 8, 9]))
+
+    DataPoints = [dp0, dp1, dp2]
+
+    # Setze die Zentroide für die Datenpunkte
+    centroid0 = dp.Datenpunkt(np.array([0.5, 1.0, 1.5]))
+    centroid1 = dp.Datenpunkt(np.array([4.5, 5.5, 6.5]))
+    centroid2 = dp.Datenpunkt(np.array([7.5, 8.5, 9.5]))
+    dp0.setNextCentroid(centroid0)
+    dp1.setNextCentroid(centroid1)
+    dp2.setNextCentroid(centroid2)
+    result = dh.dpToJson(DataPoints)
+    expected_result = [
+        {
+            "PunktDimension0": 1.0, "PunktDimension1": 2.0, "PunktDimension2": 3.0,
+            "ZentDimension0": 0.5, "ZentDimension1": 1.0, "ZentDimension2": 1.5
+        },
+        {
+            "PunktDimension0": 4.0, "PunktDimension1": 5.0, "PunktDimension2": 6.0,
+            "ZentDimension0": 4.5, "ZentDimension1": 5.5, "ZentDimension2": 6.5
+        },
+        {
+            "PunktDimension0": 7.0, "PunktDimension1": 8.0, "PunktDimension2": 9.0,
+            "ZentDimension0": 7.5, "ZentDimension1": 8.5, "ZentDimension2": 9.5
+        }
+    ]
+    assert result == expected_result
+
+
+def test_getAPIData():
+    input_data = [
+        {
+            "PunktDimension0": 1.0, "PunktDimension1": 2.0, "PunktDimension2": 3.0,
+            "ZentDimension0": 0.5, "ZentDimension1": 1.0, "ZentDimension2": 1.5
+        },
+        {
+            "PunktDimension0": "A", "PunktDimension1": "B", "PunktDimension2": "C",
+            "ZentDimension0": "X", "ZentDimension1": "Y", "ZentDimension2": "Z"
+        },
+    ]
+    result = dh.getAPIData(input_data)
+    expected_result = [
+        dp.Datenpunkt(np.array([1.0, 2.0, 3.0])),
+        dp.Datenpunkt(np.array([4.0, 5.0, 6.0])),
+    ]
+    assert len(result) == len(expected_result)
+    for i in range(len(result)):
+        assert np.allclose(result[i].getPosition(), expected_result[i].getPosition())

@@ -103,10 +103,10 @@ def MinMaxNorm(DataPoints):
     maxLoc=maxLocation(DataPoints)
     minLoc=minLocation(DataPoints)
     for dp0 in DataPoints:
-        Locs=copy.deepcopy(dp0.getPosition())
+        Locs=copy.deepcopy(dp0.getPosition()).astype(np.float64)
         for i in range(Locs.size):
             if minLoc[i]==maxLoc[i]:
-                Locs[i]=1
+                Locs[i]=1.0
             else:
                 Locs[i]=((Locs[i]-minLoc[i])/(maxLoc[i]-minLoc[i]))
         dp0.setPosition(Locs)
@@ -119,12 +119,12 @@ def z_Norm(DataPoints):
     for i in range (allValues[0].size):
         stdArray.append(np.std(allValues[:,i]))
     for dp0 in DataPoints:
-        Locs=copy.deepcopy(dp0.getPosition())
+        Locs=copy.deepcopy(dp0.getPosition()).astype(np.float64)
         for i in range(Locs.size):
             if stdArray[i]==0:
-                Locs[i]=0
+                Locs[i]=0.0
             else:
-                Locs[i]=((Locs[i]-avg[i])/stdArray[i])
+                Locs[i]=float((Locs[i]-avg[i])/stdArray[i])
         dp0.setPosition(Locs)
 
 #Gibt ein 2d-Array zurück in welchem die Positionen eines jeden Datenpunktes aufgelistet sind  
@@ -337,7 +337,6 @@ def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=
 
     return Output
     
-
 
 
 

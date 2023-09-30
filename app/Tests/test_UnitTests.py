@@ -15,9 +15,6 @@ def test_DpExcential():
 
 
 def test_EuklidDistance():
-    import numpy as np
-    from app.K_Means import Datenpunkt as dp
-    from app.K_Means import Kmeans
 
     dp0=dp.Datenpunkt(np.array([0,0]))
     dp1=dp.Datenpunkt(np.array([2,2]))
@@ -31,7 +28,7 @@ def test_ranData():
     from app.K_Means import Kmeans
 
     dp0=Kmeans.randArrData(1,2,[10,10],[0,0])
-    location=dp0[0].getPostion()
+    location=dp0[0].getPosition()
     assert location.size==2
     assert location[0]>=0 and location[1]>=0
     assert location[0]<=10 and location[1]<=10

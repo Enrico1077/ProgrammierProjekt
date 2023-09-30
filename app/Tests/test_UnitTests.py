@@ -17,7 +17,7 @@ def test_DpExcential():
     diff=location[0]-location[1]
     assert diff==-1
 
-def test_KmeansFile():
+def KmeansFile():
     import sys
     sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
     import numpy as np

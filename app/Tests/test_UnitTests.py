@@ -9,20 +9,16 @@ def test_BeispielTest():
 
 def test_DpExcential():
     import numpy as np
-    #import sys
-    #sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
     from app.K_Means import Datenpunkt as dp
     dp0 = dp.Datenpunkt(np.array([2,3]))
     location= dp0.getPosition()
     diff=location[0]-location[1]
     assert diff==-1
 
-def KmeansFile():
-    import sys
-    sys.path.append("//home//runner//work//ProgrammierProjekt//ProgrammierProjekt//app//K_Means")
+def test_KmeansFile():
     import numpy as np
-    import Datenpunkt as dp
-    import Kmeans
+    from app.K_Means import Datenpunkt as dp
+    from app.K_Means import Kmeans
 
     dp0=dp.Datenpunkt(np.array(0,0))
     dp1=dp.Datenpunkt(np.array(2,2))

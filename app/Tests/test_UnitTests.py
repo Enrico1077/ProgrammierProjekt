@@ -20,8 +20,8 @@ def test_KmeansFile():
     from app.K_Means import Datenpunkt as dp
     from app.K_Means import Kmeans
 
-    dp0=dp.Datenpunkt(np.array(0,0))
-    dp1=dp.Datenpunkt(np.array(2,2))
+    dp0=dp.Datenpunkt(np.array([0,0]))
+    dp1=dp.Datenpunkt(np.array([2,2]))
     result=Kmeans.EuklidDistance(dp0,dp1)
     assert result==8**0.5
 

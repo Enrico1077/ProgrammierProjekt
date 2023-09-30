@@ -1,9 +1,9 @@
-from . import Datenpunkt as dp
+from . import Datenpunkt as dp 
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-from . import DataHandling
+from . import DataHandling 
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -161,7 +161,7 @@ def KmeansFestesK(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _Mi
         newCentroids(_Datenpunkte,Zentroide)
 
         #Berechnung der prozendtualen Abnahme des Fehlers
-        kMiss=AverageMisstake(_Datenpunkte, LenMes)
+        kMiss=AverageMisstake(_Datenpunkte, _LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         
@@ -258,7 +258,7 @@ def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=
     #InputData-> Daten aus CSV/JASON Datei
 
     #Parameter
-    IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
+    IsRandom=1         # Falls "1" zufällige Datenpunkte, sonst Inport
     Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
     MaxValue=100       #Maximaler Wert von zufälligen Werten
     MinValue=0
@@ -297,9 +297,11 @@ def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=
     print(MinValueZet)
     bestDp=None
     avgDistance=None
+    outK=None
 
     if Elbow==0:
         bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+        outK=k
     else:
 
     
@@ -307,6 +309,7 @@ def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=
         for i in range(1,maxK):
             result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
             DistHistroy.append(avgDistance)
+            outK=i
             print("k="+str(i)+" avg. Distance: "+str(avgDistance))
         
 
@@ -317,13 +320,22 @@ def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=
 
                 if ((DistHistroy[len(DistHistroy)-2]+gradient)>=DistHistroy[len(DistHistroy)-1]):
                     bestDp=result
-                    avgDistance=DistHistroy[len(DistHistroy)-2]
+                    avgDistance=DistHistroy[len(DistHistroy)-2]                    
                     print("Elbow bei k= "+str(i))
                     break
 
             bestDp=result
 
-    return bestDp, avgDistance
+#------Ergebnis to Dict-Array-------    
+   
+    Output=[]
+    InfoLine=dict([])
+    InfoLine["k"]=str(outK)
+    InfoLine["avgDistance"]=str(avgDistance)
+    Output.append(InfoLine)
+    Output.append(DataHandling.dpToJson(bestDp))
+
+    return Output
     
 
 

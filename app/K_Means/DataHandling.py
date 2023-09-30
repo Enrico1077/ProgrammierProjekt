@@ -1,4 +1,4 @@
-from . import Datenpunkt as dp
+from . import Datenpunkt as dp 
 import csv
 import json
 import numpy as np
@@ -21,6 +21,7 @@ def getData(InputDatei, Dateityp):
             DatenArray = json.load(datei)
 
     #Dictionary -> Float-Array
+    print(DatenArray)
     OrdinaryDict=dict([])
     OutArray=[]
     for Zeile in DatenArray:
@@ -40,8 +41,8 @@ def getData(InputDatei, Dateityp):
 
 
     #FloatArray -> DataPoint-Array
-    print(OutArray)
-    print(OrdinaryDict)
+    #print(OutArray)
+    #print(OrdinaryDict)
     NewDataPoints=[]
     for Posi in OutArray:
         dp0= dp.Datenpunkt(np.array(Posi))
@@ -83,9 +84,19 @@ def getAPIData(DatenArray):
     return NewDataPoints
 
 
+def dpToJson(Datapoints):
 
-
-
+    Output=[]
+    for dp0 in Datapoints:
+        posi=dp0.getPosition()
+        curLine=dict([])
+        for i in range(posi.size):
+            curLine["PunktDimension"+str(i)]=posi[i]
+        zentPosi=dp0.getNextCentroid().getPosition()
+        for i in range(zentPosi.size):
+            curLine["ZentDimension"+str(i)]=zentPosi[i]  
+        Output.append(curLine)
+    return(Output)
 
 
 

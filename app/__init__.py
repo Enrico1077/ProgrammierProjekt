@@ -2,7 +2,7 @@
 
 import os
 from flask import Flask
-from . import controller
+from .routes import upload
 
 # create flask app
 def create_app(test_config=None):
@@ -26,7 +26,12 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # blueprint for handling http requests
-    app.register_blueprint(controller.bp)
+    # blueprint for handling http post requests
+    app.register_blueprint(upload.bp)
+
+    # a simple API to test the connection
+    @app.route('/hello')
+    def hello():
+        return 'Hello from the coolest backend server in the world!'
 
     return app

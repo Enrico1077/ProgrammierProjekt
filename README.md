@@ -47,15 +47,15 @@ waitress-serve --port 5000 --host 0.0.0.0 --call app:create_app
 ```
 
 **Upload a CSV file (HTTP POST):**
-The body must have a field called "file" which contains a CSV file as value.
+The body must have a field called "file" which contains a CSV file as value. The parameter k can be passed optionally. If it is not passed, Elbow is used to determine the optimal k.
 
 ```
-/kmeans/csv/<parameter_k>
+/kmeans/csv?k=10
 ```
 
 **Upload a JSON file (HTTP POST):**
-The body must have a field called "file" which contains a JSON file as value.
+The body must have a field called "file" which contains a JSON file as value. The parameter k can be passed optionally. If it is not passed, Elbow is used to determine the optimal k.
 
 ```
-/kmeans/json/<parameter_k>
+/kmeans/json?k=10
 ```

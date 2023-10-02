@@ -50,7 +50,7 @@ def handle_cvs_upload():
                 calculated_data = kmeans.kmeansMain(data)
             else:
                 # don't use elbow and use the given parameter k instead
-                calculated_data = kmeans.kmeansMain(data, 0, param_k)
+                calculated_data = kmeans.kmeansMain(data, param_k, 0)
 
             try:
                 return jsonify(calculated_data)
@@ -99,7 +99,7 @@ def handle_json_jpload():
                 calculated_data = kmeans.kmeansMain(json_data)
             else:
                 # don't use elbow and use the given parameter k instead
-                calculated_data = kmeans.kmeansMain(json_data, 0, param_k)
+                calculated_data = kmeans.kmeansMain(json_data, param_k, 0)
 
             try:
                 return jsonify(calculated_data)

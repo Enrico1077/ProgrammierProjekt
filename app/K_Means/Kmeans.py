@@ -252,7 +252,7 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(InputData, k, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2):
+def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei

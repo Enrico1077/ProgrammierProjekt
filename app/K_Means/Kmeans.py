@@ -258,7 +258,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     #InputData-> Daten aus CSV/JASON Datei
 
     #Parameter
-    IsRandom=1         # Falls "1" zufällige Datenpunkte, sonst Inport
+    IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
     Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
     MaxValue=100       #Maximaler Wert von zufälligen Werten
     MinValue=0

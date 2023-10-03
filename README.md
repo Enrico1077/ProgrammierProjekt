@@ -30,6 +30,12 @@ Run the app in dev mode:
 flask --app app run --debug
 ```
 
+Run unit tests locally:
+
+```
+pytest app/Tests/
+```
+
 ## Production
 
 Run the app in production mode:

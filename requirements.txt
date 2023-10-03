@@ -3,3 +3,4 @@ waitress
 pylint
 numpy
 matplotlib
+pytest

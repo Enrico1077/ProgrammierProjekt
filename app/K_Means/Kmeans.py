@@ -1,9 +1,19 @@
+import enum
 from . import Datenpunkt as dp 
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
 from . import DataHandling 
+
+class Normmethod(enum.IntEnum):
+    none = 0
+    min_max = 1
+    z = 2
+
+class DistanceMatrix(enum.IntEnum):
+    euclidean = 0
+    manhattan = 1
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 

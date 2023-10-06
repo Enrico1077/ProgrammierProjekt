@@ -320,6 +320,9 @@ def handle_upload(distance_matrix):
             data = json.loads(json_file.read())
             # Closing the file without saving them to the hard disk.
             json_file.close()
+        else:
+            resp = make_response('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
+            return resp
     else:
         # Return error message if no file was uploaded
         resp = make_response('No file was uploaded.', 400)

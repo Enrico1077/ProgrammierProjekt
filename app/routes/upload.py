@@ -148,7 +148,7 @@ def handle_upload(distance_matrix):
     norm_method = Normmethod.none
     r = 5
     max_centroids_abort = 100
-    min_pct_elbow = 0.5
+    min_pct_elbow = 0
     c = 0
     min_pct_auto_cycle = 0.5
     max_auto_cycle_abort = 25

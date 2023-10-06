@@ -76,15 +76,18 @@ The API returns the calculated data as a JSON object.
 | normMethod        | Normalization method                                                                                                            | Default: None<br>1: Min-max normalization<br>2: z-normalization |
 | r                 | Number of repetitions with different centroids                                                                                  | Integer, greater than zero<br>Default: 5                        |
 | maxCentroidsAbort | Indication, after how many centroids the Elbow procedure is aborted                                                             | Integer, greater than zero<br>Default: 100                      |
-| minPctElbow       | Minimum percentage deviation to detect an Elbow                                                                                 | Floating point number, 0 to 100<br>Default: 0.5                 |
+| minPctElbow       | Minimum percentage deviation to detect an Elbow                                                                                 | Floating point number, 0 to 100<br>Default: 0                 |
 | c                 | Number of cycles in the algorithm                                                                                               | Integer, greater than zero<br>Default: Dynamic                  |
 | minPctAutoCycle   | With automatic number of cycles, specifies the minimum percentage improvement that must occur before another cycle takes place. | Floating point number, 0 to 100<br>Default: 0.5                 |
 | maxAutoCycleAbort | Specifies after how many cycles to terminate at automatic cycle count, regardless of percentage improvement                     | Integer, greater than zero<br>Default: 25                       |
 
-Example:
+Examples:
 
 ```
 /kmeans/manhattan?k=10&normMethod=1&r=55&maxCentroidsAbort=15&minPctElbow=0.1&c=33&minPctAutoCycle=0.1&maxAutoCycleAbort=10
+```
+```
+/kmeans/euclidean
 ```
 
 ### k-Means API v1.0 (deprecated)

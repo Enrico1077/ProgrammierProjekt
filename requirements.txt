@@ -3,4 +3,4 @@ waitress
 pylint
 numpy
 matplotlib
-pytest
+multiprocessing

@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import logging
+import pandas as pd
 from flask import (Blueprint, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
 from ..K_Means import Kmeans as kmeans
@@ -320,6 +321,27 @@ def handle_upload(distance_matrix):
             data = json.loads(json_file.read())
             # Closing the file without saving them to the hard disk.
             json_file.close()
+        elif file.filename.lower().endswith(".xls") or file.filename.lower().endswith(".xlsx"):
+            # Returns a bytes stream of the data of the uploaded file
+            excel_file = file.stream
+            # Set reading pointer to start position
+            excel_file.seek(0)
+            # Conversion of the stream into readable bytes
+            excel_file = io.BytesIO(excel_file.read())
+
+            sheet_name = 0
+            if request.args.get('sheetName'):
+                # If a worksheet name was passed, use it, otherwise use the first worksheet
+                sheet_name = request.args.get('sheetName')
+            
+            try:
+                excel_content = pd.read_excel(excel_file, sheet_name)
+            except ValueError:
+                resp = make_response('The specified worksheet does not exist in the uploaded Excel file.', 400)
+                return resp
+            data = excel_content.to_dict(orient='records')
+
+            excel_file.close()
         else:
             resp = make_response('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
             return resp

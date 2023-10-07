@@ -9,6 +9,7 @@ from werkzeug.datastructures import FileStorage
 from ..K_Means import Kmeans as kmeans
 from ..logging_config import setup_logging
 from ..K_Means.Kmeans import Normmethod, DistanceMatrix
+import multiprocessing
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ def handle_cvs_upload():
                 # Closing the file without saving them to the hard disk.
                 csv_file.close()
 
+            multiprocessing.freeze_support()
             if use_elbow:
                 # use elbow algorithm to determine parameter k
                 calculated_data = kmeans.kmeansMain(data)
@@ -104,6 +106,7 @@ def handle_json_jpload():
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
 
+            multiprocessing.freeze_support()
             if use_elbow:
                 # use elbow algorithm to determine parameter k
                 calculated_data = kmeans.kmeansMain(json_data)
@@ -330,6 +333,7 @@ def handle_upload(distance_matrix):
         # calculated_data = kmeans.kmeansMain(data, param_k, 0)
         use_elbow = 1 if k == 0 else 0
         auto_cycle = 1 if c == 0 else 0
+        multiprocessing.freeze_support()
         calculated_data = kmeans.kmeansMain(data, k, use_elbow, max_centroids_abort,
                                             min_pct_elbow, c, auto_cycle, min_pct_auto_cycle,
                                             max_auto_cycle_abort, r, distance_matrix_int,

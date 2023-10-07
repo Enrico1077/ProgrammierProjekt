@@ -355,7 +355,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValueZet=minLocation(Datenpunkte)
     bestDp=None
     avgDistance=None
-    outK=None
+    outK=-1
 
     if Elbow==0:
         bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
@@ -424,11 +424,15 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
                 if (oldAvgDistance+gradient)>=aktAvgDistance:
                         bestDp=result_data
-                        avgDistance=aktAvgDistance                  
+                        avgDistance=aktAvgDistance 
+                        outK=i                
                         print("Elbow bei k= "+str(i))
                         aktElbow=True
                         break
-
+                
+            if outK == -1:
+                outK=maxK 
+                         
             bestDp=result_data
             avgDistance=aktAvgDistance
 

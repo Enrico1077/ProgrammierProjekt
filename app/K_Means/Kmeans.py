@@ -1,10 +1,13 @@
 import enum
-from . import Datenpunkt as dp 
+import Datenpunkt as dp #
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-from . import DataHandling 
+import DataHandling #
+import multiprocessing
+import os
+import time
 
 class Normmethod(enum.IntEnum):
     none = 0
@@ -195,7 +198,7 @@ def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Z
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         if ProzVerbes<_ZykKrit:
             break
 
@@ -248,17 +251,67 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
             KmeansAutoZyk(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
         #Ergebnisse für die aktuelle Wiederholung mit unterschiedlichen Zentroiden
         curAvgMiss=AverageMisstake(_DataPoints, _LenMes)
-        print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
+        #print("Wiederholung: "+str(j+1)+" Aktueller durschnittlicher Fehler: "+ str(curAvgMiss))
         if (avgMiss==-1 or (avgMiss>curAvgMiss)):
             avgMiss=curAvgMiss
             BestData=copy.deepcopy(_DataPoints)
         for Dp0 in _DataPoints:
             Dp0.setNextCentroid(None)
 
-    print("Kleinster durschnittlicher Fehler= "+ str(avgMiss))
+    print("k="+str(_k)+" Kleinster durschnittlicher Fehler= "+ str(avgMiss))
 
     return BestData, avgMiss
 
+
+
+#---------------------------------------Multi-Processing--------------------------------------------------
+
+def CompleteKmeansParalell(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
+    result_queue = multiprocessing.Queue()
+    processes=[]
+    for i in range (_Repeats):
+        process = multiprocessing.Process(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
+        process.start()
+        #processes.append(process)
+
+    print('Hier1')
+    for process in processes:
+        print('Joining')
+        process.join()
+        print("Fertig")
+    
+    print('Hier2')
+
+    best_result = None
+    best_avg_distance = float('inf')
+
+    while not result_queue.empty():
+        result, avg_distance = result_queue.get()
+        if avg_distance < best_avg_distance:
+            best_result = result
+            best_avg_distance = avg_distance
+
+    result_queue.close()
+    result_queue.join_thread()
+            
+    print("k="+str(_k)+" Kleinster durschnittlicher Fehler= "+ str(best_avg_distance))
+    return best_result, best_avg_distance
+
+
+def KmeansRepeatProcess(_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue):
+    if _autoZyk==0:
+            KmeansFesterZyk(_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes, _MinValueZet)
+    else:
+            KmeansAutoZyk(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
+    curAvgMiss=AverageMisstake(_DataPoints, _LenMes)
+    result_queue.put((_DataPoints, curAvgMiss))
+    print(str(os.getpid())+" | "+str(curAvgMiss))
+    
+
+
+def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results):
+    result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+    results.put((result, avgDistance, k))
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
@@ -268,11 +321,13 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     #InputData-> Daten aus CSV/JASON Datei
 
     #Parameter
-    IsRandom=1         # Falls "1" zufällige Datenpunkte, sonst Inport
+    IsRandom=0         # Falls "1" zufällige Datenpunkte, sonst Inport
     Anzahl=1000        #Anzahl von zufällig erzeugenten Testwerten
     MaxValue=100       #Maximaler Wert von zufälligen Werten
     MinValue=0
     Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
+
+    multi=0
 
     #k=10                #Anzahl der Zentroide (k)
     #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
@@ -288,11 +343,11 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     #LenMes=0            #"0" für Euklid, "1" für Manhatten
     #normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
-
     if IsRandom==1:
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
     else:
-        Datenpunkte =DataHandling.getAPIData(InputData)
+        #Datenpunkte =DataHandling.getAPIData(InputData) #
+        Datenpunkte= DataHandling.getData('app\K_Means\Examples\snakes_count.csv',"c") #
         Dimension=Datenpunkte[0].getPosition().size
 
     if(normali==1):
@@ -303,18 +358,15 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
     MaxValueZet=maxLocation(Datenpunkte)
     MinValueZet=minLocation(Datenpunkte)
-    print(MaxValueZet)
-    print(MinValueZet)
     bestDp=None
     avgDistance=None
     outK=None
 
     if Elbow==0:
-        bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+        bestDp,avgDistance=CompleteKmeansParalell(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
         outK=k
-    else:
+    elif(Elbow==1 and multi==0):
 
-    
         DistHistroy=[]
         for i in range(1,maxK):
             result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
@@ -336,8 +388,48 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
             bestDp=result
 
+    else:
+        results= multiprocessing.Queue()
+        processPool=[]
+        for i in range(maxK):
+            process=multiprocessing.Process(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
+            process.start()
+            processPool.append(process)
+        
+        for process in processPool:
+            process.join()
+
+        #Daten ordnen
+        resultDict=dict()
+        while not results.empty():
+            result_data, aktAvgDistance, k = results.get()
+            resultDict[k]=(result_data, aktAvgDistance)
+
+        for i in range(2,maxK):
+            result_data,aktAvgDistance=resultDict[i]
+            egal, oldAvgDistance=resultDict[i-1]
+            egal, olderAvgDistance=resultDict[i-2]
+            gradient=oldAvgDistance-olderAvgDistance
+            gradient*=(1+(inaccu/100))
+            print("Steigung: "+str(gradient)+" | Next DP > "+str(oldAvgDistance+gradient))
+
+            if (oldAvgDistance+gradient)>=aktAvgDistance:
+                    bestDp=result
+                    avgDistance=aktAvgDistance                  
+                    print("Elbow bei k= "+str(i))
+                    break
+
+        bestDp=result_data
+        avgDistance=aktAvgDistance
+
+
+
+
+        
+
+
 #------Ergebnis to Dict-Array-------    
-   
+    return bestDp
     Output=[]
     InfoLine=dict([])
     InfoLine["k"]=str(outK)
@@ -350,8 +442,15 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
 
 
-
-
+if __name__ == '__main__':
+    multiprocessing.freeze_support()
+    starttime=time.time()
+    result = kmeansMain('', maxK=10, Repeats=5, autoZyk=1, Zyklen=5, Elbow=0)
+    print("Finito")
+    endtime=time.time()
+    e_time = endtime-starttime
+    #visualize_clusters(result)
+    print("Zeit in s:"+str(e_time))
 
         
     

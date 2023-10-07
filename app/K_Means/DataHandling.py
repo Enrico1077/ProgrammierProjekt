@@ -1,4 +1,4 @@
-from . import Datenpunkt as dp 
+import Datenpunkt as dp #
 import csv
 import json
 import numpy as np
@@ -21,7 +21,7 @@ def getData(InputDatei, Dateityp):
             DatenArray = json.load(datei)
 
     #Dictionary -> Float-Array
-    print(DatenArray)
+    #print(DatenArray)
     OrdinaryDict=dict([])
     OutArray=[]
     for Zeile in DatenArray:
@@ -73,14 +73,14 @@ def getAPIData(DatenArray):
         OutArray.append(newLine)
 
     #FloatArray -> DataPoint-Array
-    print(OutArray)
-    print(OrdinaryDict)
+    #print(OutArray)
+    #print(OrdinaryDict)
     NewDataPoints=[]
     for Posi in OutArray:
         dp0= dp.Datenpunkt(np.array(Posi))
         NewDataPoints.append(dp0)
 
-    print("Klappt!")
+    #print("Klappt!")
     return NewDataPoints
 
 

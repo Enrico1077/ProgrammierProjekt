@@ -3,4 +3,3 @@ waitress
 pylint
 numpy
 matplotlib
-multiprocessing

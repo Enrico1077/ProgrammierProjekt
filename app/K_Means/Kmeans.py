@@ -8,6 +8,7 @@ import DataHandling #
 import multiprocessing
 import os
 import time
+import queue
 
 class Normmethod(enum.IntEnum):
     none = 0
@@ -267,21 +268,22 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 #---------------------------------------Multi-Processing--------------------------------------------------
 
 def CompleteKmeansParalell(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
-    result_queue = multiprocessing.Queue()
+    m=multiprocessing.Manager()
+    result_queue = m.Queue()
+
+
     processes=[]
     for i in range (_Repeats):
         process = multiprocessing.Process(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
         process.start()
-        #processes.append(process)
+        processes.append(process)    
 
-    print('Hier1')
     for process in processes:
-        print('Joining')
         process.join()
-        print("Fertig")
-    
-    print('Hier2')
 
+
+    #result_queue.close()
+    #result_queue.join_thread()
     best_result = None
     best_avg_distance = float('inf')
 
@@ -291,9 +293,6 @@ def CompleteKmeansParalell(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_
             best_result = result
             best_avg_distance = avg_distance
 
-    result_queue.close()
-    result_queue.join_thread()
-            
     print("k="+str(_k)+" Kleinster durschnittlicher Fehler= "+ str(best_avg_distance))
     return best_result, best_avg_distance
 
@@ -304,13 +303,13 @@ def KmeansRepeatProcess(_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,
     else:
             KmeansAutoZyk(_DataPoints,_stopZyk,_k,_Dimension,_MaxValueZet,_LenMes,_ZykKrit, _MinValueZet)
     curAvgMiss=AverageMisstake(_DataPoints, _LenMes)
-    result_queue.put((_DataPoints, curAvgMiss))
+    result_queue.put((_DataPoints, curAvgMiss))  
     print(str(os.getpid())+" | "+str(curAvgMiss))
     
 
 
 def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results):
-    result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+    result,avgDistance=CompleteKmeansParalell(Repeats, autoZyk, copy.deepcopy(Datenpunkte), Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
     results.put((result, avgDistance, k))
 
 
@@ -327,7 +326,8 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValue=0
     Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
-    multi=0
+    multi=1             #Sollen k's parralel berechnet werden?
+    simu=4              #Anzahl der parralelen Berechnungen für k
 
     #k=10                #Anzahl der Zentroide (k)
     #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
@@ -347,7 +347,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
     else:
         #Datenpunkte =DataHandling.getAPIData(InputData) #
-        Datenpunkte= DataHandling.getData('app\K_Means\Examples\snakes_count.csv',"c") #
+        Datenpunkte= DataHandling.getData('app\K_Means\Examples\Example_Programmierprojekt.CSV',"c") #
         Dimension=Datenpunkte[0].getPosition().size
 
     if(normali==1):
@@ -388,39 +388,54 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
             bestDp=result
 
-    else:
-        results= multiprocessing.Queue()
-        processPool=[]
-        for i in range(maxK):
-            process=multiprocessing.Process(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
-            process.start()
-            processPool.append(process)
-        
-        for process in processPool:
-            process.join()
-
-        #Daten ordnen
+    else:       #multiprozessing elbow
+        aktElbow=False
         resultDict=dict()
-        while not results.empty():
-            result_data, aktAvgDistance, k = results.get()
-            resultDict[k]=(result_data, aktAvgDistance)
+        for j in range(0,(int(maxK/simu)+1)):
 
-        for i in range(2,maxK):
-            result_data,aktAvgDistance=resultDict[i]
-            egal, oldAvgDistance=resultDict[i-1]
-            egal, olderAvgDistance=resultDict[i-2]
-            gradient=oldAvgDistance-olderAvgDistance
-            gradient*=(1+(inaccu/100))
-            print("Steigung: "+str(gradient)+" | Next DP > "+str(oldAvgDistance+gradient))
+            if aktElbow:
+                break
+            
+            m=multiprocessing.Manager()
+            results=m.Queue()
+            processPool=[]
+            for i in range(1,simu+1):
+                process=multiprocessing.Process(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, (j*simu+i), Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
+                process.start()
+                processPool.append(process)
+           
+            for process in processPool:
+                process.join()
 
-            if (oldAvgDistance+gradient)>=aktAvgDistance:
-                    bestDp=result
-                    avgDistance=aktAvgDistance                  
-                    print("Elbow bei k= "+str(i))
-                    break
+            print('Ordnen')
 
-        bestDp=result_data
-        avgDistance=aktAvgDistance
+            while not results.empty():
+                result_data, aktAvgDistance, k = results.get()
+                resultDict[k]=(result_data, aktAvgDistance)
+
+            print('Dict')
+            print(j*simu)
+            print((j+1)*simu)
+            for i in range(j*simu,(j+1)*simu):
+                if(i<3):
+                    continue
+                result_data,aktAvgDistance=resultDict[i]
+                egal, oldAvgDistance=resultDict[i-1]
+                egal, olderAvgDistance=resultDict[i-2]
+                gradient=oldAvgDistance-olderAvgDistance
+                gradient*=(1+(inaccu/100))
+                print(f'k={i} -> Avg. Misstake= {aktAvgDistance}')
+                print("Steigung: "+str(gradient)+" | Next DP > "+str(oldAvgDistance+gradient))
+
+                if (oldAvgDistance+gradient)>=aktAvgDistance:
+                        bestDp=result_data
+                        avgDistance=aktAvgDistance                  
+                        print("Elbow bei k= "+str(i))
+                        aktElbow=True
+                        break
+
+            bestDp=result_data
+            avgDistance=aktAvgDistance
 
 
 
@@ -445,11 +460,11 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     starttime=time.time()
-    result = kmeansMain('', maxK=10, Repeats=5, autoZyk=1, Zyklen=5, Elbow=0)
+    result = kmeansMain('', maxK=50, Repeats=10, autoZyk=1, Zyklen=5, Elbow=1, normali=0, k=7)
     print("Finito")
     endtime=time.time()
     e_time = endtime-starttime
-    #visualize_clusters(result)
+    visualize_clusters(result)
     print("Zeit in s:"+str(e_time))
 
         

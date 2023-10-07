@@ -66,7 +66,7 @@ To use the Manhattan distance:
 /kmeans/manhattan
 ```
 
-The body must have a field called "file" which contains a CSV or JSON file as value.
+The body must have a field called "file" which contains a .csv, .json, .xlsx or .xls file as value.
 The API accepts the parameters shown in the table as query parameters. All parameters are optional! If a parameter is not specified, the default value given in the table is used.
 The API returns the calculated data as a JSON object.
 
@@ -80,6 +80,7 @@ The API returns the calculated data as a JSON object.
 | c                 | Number of cycles in the algorithm                                                                                               | Integer, greater than zero<br>Default: Dynamic                  |
 | minPctAutoCycle   | With automatic number of cycles, specifies the minimum percentage improvement that must occur before another cycle takes place. | Floating point number, 0 to 100<br>Default: 0.5                 |
 | maxAutoCycleAbort | Specifies after how many cycles to terminate at automatic cycle count, regardless of percentage improvement                     | Integer, greater than zero<br>Default: 25                       |
+|sheetName|Specifies which worksheet of an Excel file is to be processed. |String with the name of the worksheet<br>Default: The first worksheet
 
 Examples:
 

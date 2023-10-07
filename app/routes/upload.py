@@ -37,7 +37,7 @@ def handle_cvs_upload():
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
             try:
-                csv_file = filestorage_to_fileobject(file)
+                csv_file = bytes_to_text(file)
 
                 # creating a csv reader object
                 csvreader = csv.DictReader(csv_file)
@@ -93,7 +93,7 @@ def handle_json_jpload():
         file = request.files.get('file')
         if file.filename.lower().endswith(".json"):
             try:
-                json_file = filestorage_to_fileobject(file)
+                json_file = bytes_to_text(file)
                 json_data = json.loads(json_file.read())
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
@@ -123,21 +123,7 @@ def handle_json_jpload():
     resp = make_response('No JSON file was uploaded.', 400)
     return resp
 
-
-def filestorage_to_fileobject(filestorage: FileStorage) -> io.TextIOWrapper:
-    """ this function converts a Flask FileStorage object into a FileObject """
-    # Returns a bytes stream of the data of the uploaded file
-    temp_file = filestorage.stream
-    # Set reading pointer to start position
-    temp_file.seek(0)
-    # Conversion of the stream into readable bytes
-    temp_file = io.BytesIO(temp_file.read())
-    # Conversion of the data into a file object readable in text mode
-    temp_file = io.TextIOWrapper(temp_file, encoding='utf-8')
-    return temp_file
-
 # new routes
-
 
 @bp.route('/<distance_matrix>', methods=['POST'])
 def handle_upload(distance_matrix):
@@ -307,27 +293,19 @@ def handle_upload(distance_matrix):
     if 'file' in request.files:
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
-            csv_file = filestorage_to_fileobject(file)
+            csv_file = filestorage_to_bytes(file)
 
-            # creating a csv reader object
-            csvreader = csv.DictReader(csv_file)
-            # converting the data into an array of JSON objects (one JSON object per line)
-            data = list(csvreader)
+            csv_content = pd.read_csv(csv_file, sep=None)
+            data = csv_content.to_dict(orient='records')
 
-            # Closing the file without saving them to the hard disk.
             csv_file.close()
         elif file.filename.lower().endswith(".json"):
-            json_file = filestorage_to_fileobject(file)
+            json_file = bytes_to_text(file)
             data = json.loads(json_file.read())
             # Closing the file without saving them to the hard disk.
             json_file.close()
         elif file.filename.lower().endswith(".xls") or file.filename.lower().endswith(".xlsx"):
-            # Returns a bytes stream of the data of the uploaded file
-            excel_file = file.stream
-            # Set reading pointer to start position
-            excel_file.seek(0)
-            # Conversion of the stream into readable bytes
-            excel_file = io.BytesIO(excel_file.read())
+            excel_file = filestorage_to_bytes(file)
 
             sheet_name = 0
             if request.args.get('sheetName'):
@@ -379,3 +357,21 @@ def handle_upload(distance_matrix):
         logging.error("An error occured while processing uploaded data.")
         resp = make_response('The uploaded file could not be processed.', 400)
         return resp
+
+def bytes_to_text(filestorage: FileStorage) -> io.TextIOWrapper:
+    """ this function converts a Flask FileStorage object into a FileObject """
+    # Returns a bytes stream of the data of the uploaded file
+    temp_file = filestorage_to_bytes(filestorage)
+    # Conversion of the data into a file object readable in text mode
+    temp_file = io.TextIOWrapper(temp_file, encoding='utf-8')
+    return temp_file
+
+def filestorage_to_bytes(filestorage: FileStorage) -> io.BytesIO:
+    """ this function converts a Flask FileStorage object into a BytesIO object """
+    # Returns a bytes stream of the data of the uploaded file
+    temp_file = filestorage.stream
+    # Set reading pointer to start position
+    temp_file.seek(0)
+    # Conversion of the stream into readable bytes
+    temp_file = io.BytesIO(temp_file.read())
+    return temp_file

@@ -298,7 +298,14 @@ def handle_upload(distance_matrix):
         if file.filename.lower().endswith(".csv"):
             csv_file = filestorage_to_bytes(file)
 
-            csv_content = pd.read_csv(csv_file, sep=None)
+            if request.args.get('csvDecimalSeparator').lower() == 'us':
+                print("US")
+                csv_content = pd.read_csv(csv_file, sep=None, decimal='.', thousands=',', engine='python')
+            else:
+                # Use European format if US format is not explicitly specified
+                print("EU")
+                csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+            
             data = csv_content.to_dict(orient='records')
 
             csv_file.close()

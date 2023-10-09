@@ -143,6 +143,8 @@ def handle_upload(distance_matrix):
     min_pct_auto_cycle = 0.5
     max_auto_cycle_abort = 25
     distance_matrix_int = DistanceMatrix.euclidean
+    simultaneous_calculating = 1
+    simultaneous_calculations = 8
 
     # check given distance_matrix
     if distance_matrix == "euclidean":
@@ -291,6 +293,27 @@ def handle_upload(distance_matrix):
         resp = make_response(
             'The passed parameter maxAutoCycleAbort must be an integer.', 400)
         return resp
+    
+    # If parameter given, perform pausilibity check for parallelCalculations
+    try:
+        if request.args.get('parallelCalculations'):
+            simultaneous_calculations = int(request.args.get('parallelCalculations'))
+            if simultaneous_calculations < 1:
+                logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
+                             api_str, request.args.get('parallelCalculations'))
+                resp = make_response(
+                    'The passed parameter parallelCalculations must be at least one.', 400)
+                return resp
+            if simultaneous_calculations == 1:
+                simultaneous_calculating = 0
+            else:
+                simultaneous_calculating = 1
+    except ValueError:
+        logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
+                     api_str, request.args.get('parallelCalculations'))
+        resp = make_response(
+            'The passed parameter parallelCalculations must be an integer.', 400)
+        return resp
 
     # Handle uploaded file
     if 'file' in request.files:
@@ -298,7 +321,16 @@ def handle_upload(distance_matrix):
         if file.filename.lower().endswith(".csv"):
             csv_file = filestorage_to_bytes(file)
 
-            csv_content = pd.read_csv(csv_file, sep=None)
+            if request.args.get('csvDecimalSeparator'):
+                if request.args.get('csvDecimalSeparator').lower() == 'us':
+                    csv_content = pd.read_csv(csv_file, sep=None, decimal='.', thousands=',', engine='python')
+                else:
+                    # Use European format if US format is not explicitly specified
+                    csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+            else:
+                # Use European format if US format is not explicitly specified
+                csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+            
             data = csv_content.to_dict(orient='records')
 
             csv_file.close()
@@ -340,7 +372,7 @@ def handle_upload(distance_matrix):
         calculated_data = kmeans.kmeansMain(data, k, use_elbow, max_centroids_abort,
                                             min_pct_elbow, c, auto_cycle, min_pct_auto_cycle,
                                             max_auto_cycle_abort, r, distance_matrix_int,
-                                            norm_method)
+                                            norm_method, simultaneous_calculating, simultaneous_calculations)
         logging.debug("Excuting k-Means with the following configuration:\n\tk: %s"
                       + "\n\tuse_elbow: %s\n\tmaxCentroidsAbort: %s\n\tminPctElbow: %s\n\tc: %s"
                       + "\n\tauto_cycle: %s\n\tminPctAutoCycle: %s\n\tmaxAutoCycleAbort: %s"

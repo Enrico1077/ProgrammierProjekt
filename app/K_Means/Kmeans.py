@@ -310,7 +310,7 @@ def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZ
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2):
+def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2, multi=1, simu=8):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei

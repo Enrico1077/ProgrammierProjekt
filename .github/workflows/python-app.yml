@@ -45,3 +45,10 @@ jobs:
         mv cov.xml $GITHUB_WORKSPACE/coverage_reports/
         echo "::set-output name=coverage_report::$GITHUB_WORKSPACE/coverage_reports/cov.xml"
       if: always()
+    - name: Upload coverage report as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage-report
+        path: $GITHUB_WORKSPACE/coverage_reports
+    
+

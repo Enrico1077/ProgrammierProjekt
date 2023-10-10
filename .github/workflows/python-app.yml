@@ -37,9 +37,11 @@ jobs:
     - name: Test with pytest and generate Report
       run: |
         pytest --cov=app --cov-report=xml:cov.xml app/Tests/
-    - name: Show coverage report
+    - name: Show and download coverage report
       run: |
-        pip install coverage
-        coverage html -d coverage_report
-        python -m webbrowser coverage_report/index.html
+        cat cov.xml
+        mkdir -p coverage_reports
+        cp cov.xml coverage_reports/
+        mv cov.xml $GITHUB_WORKSPACE/coverage_reports/
+        echo "::set-output name=coverage_report::$GITHUB_WORKSPACE/coverage_reports/cov.xml"
       if: always()

@@ -26,14 +26,21 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    @app.after_request
+    def add_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Content-Type'] = 'application/json'
+        return response
+
     # blueprint for handling http post requests
     app.register_blueprint(upload.bp)
 
     # a simple API to test the connection
     @app.route('/hello')
     def hello():
-        resp = make_response('Hello from the coolest backend server in the world!.', 200)
+        resp = make_response('"Hallo": "Hallo"', 200)
         resp.headers['Access-Control-Allow-Origin'] = '*'
+        resp.headers['Content-Type'] = 'text/plain'
         return resp
 
     return app

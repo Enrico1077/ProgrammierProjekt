@@ -1,7 +1,7 @@
 """ module to initialize a flask backend server """
 
 import os
-from flask import Flask
+from flask import Flask, make_response
 from .routes import upload
 
 # create flask app
@@ -32,6 +32,8 @@ def create_app(test_config=None):
     # a simple API to test the connection
     @app.route('/hello')
     def hello():
-        return 'Hello from the coolest backend server in the world!'
+        resp = make_response('Hello from the coolest backend server in the world!.', 200)
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     return app

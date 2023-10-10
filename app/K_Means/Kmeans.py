@@ -5,7 +5,8 @@ import random
 import matplotlib.pyplot as plt
 import copy 
 from . import DataHandling #
-import multiprocessing
+import threading
+import queue
 
 
 class Normmethod(enum.IntEnum):
@@ -174,8 +175,7 @@ def KmeansFesterZyk(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _
 
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
-        ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+        
         
     
 
@@ -196,8 +196,9 @@ def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Z
 
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
+        if (oldMiss==0):
+            break
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         if ProzVerbes<_ZykKrit:
             break
 
@@ -266,13 +267,13 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 #---------------------------------------Multi-Processing--------------------------------------------------
 
 def CompleteKmeansParalell(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
-    m=multiprocessing.Manager()
-    result_queue = m.Queue()
+    #m=multiprocessing.Manager()
+    result_queue = queue.Queue()
 
 
     processes=[]
     for i in range (_Repeats):
-        process = multiprocessing.Process(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
+        process = threading.Thread(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
         process.start()
         processes.append(process)
         print(f'Prozess {i} ist gestartet ')  
@@ -343,6 +344,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
     else:
         Datenpunkte =DataHandling.getAPIData(InputData) 
+        #Datenpunkte = DataHandling.getData("app\K_Means\Examples\Example_Programmierprojekt.csv","c")
         Dimension=Datenpunkte[0].getPosition().size
 
     if(normali==1):
@@ -391,11 +393,11 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
             if aktElbow:
                 break
             
-            m=multiprocessing.Manager()
-            results=m.Queue()
+            #m=multiprocessing.Manager()
+            results=queue.Queue()
             processPool=[]
             for i in range(1,simu+1):
-                process=multiprocessing.Process(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, (j*simu+i), Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
+                process=threading.Thread(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, (j*simu+i), Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
                 process.start()
                 processPool.append(process)
            
@@ -453,6 +455,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
     return Output
     
+
 
 
 

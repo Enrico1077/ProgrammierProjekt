@@ -4,6 +4,7 @@ import csv
 import io
 import json
 import logging
+import pandas as pd
 from flask import (Blueprint, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
 from ..K_Means import Kmeans as kmeans
@@ -37,7 +38,7 @@ def handle_cvs_upload():
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
             try:
-                csv_file = filestorage_to_fileobject(file)
+                csv_file = bytes_to_text(file)
 
                 # creating a csv reader object
                 csvreader = csv.DictReader(csv_file)
@@ -94,7 +95,7 @@ def handle_json_jpload():
         file = request.files.get('file')
         if file.filename.lower().endswith(".json"):
             try:
-                json_file = filestorage_to_fileobject(file)
+                json_file = bytes_to_text(file)
                 json_data = json.loads(json_file.read())
                 # Closing the file without saving them to the hard disk.
                 json_file.close()
@@ -125,21 +126,7 @@ def handle_json_jpload():
     resp = make_response('No JSON file was uploaded.', 400)
     return resp
 
-
-def filestorage_to_fileobject(filestorage: FileStorage) -> io.TextIOWrapper:
-    """ this function converts a Flask FileStorage object into a FileObject """
-    # Returns a bytes stream of the data of the uploaded file
-    temp_file = filestorage.stream
-    # Set reading pointer to start position
-    temp_file.seek(0)
-    # Conversion of the stream into readable bytes
-    temp_file = io.BytesIO(temp_file.read())
-    # Conversion of the data into a file object readable in text mode
-    temp_file = io.TextIOWrapper(temp_file, encoding='utf-8')
-    return temp_file
-
 # new routes
-
 
 @bp.route('/<distance_matrix>', methods=['POST'])
 def handle_upload(distance_matrix):
@@ -156,6 +143,8 @@ def handle_upload(distance_matrix):
     min_pct_auto_cycle = 0.5
     max_auto_cycle_abort = 25
     distance_matrix_int = DistanceMatrix.euclidean
+    simultaneous_calculating = 1
+    simultaneous_calculations = 8
 
     # check given distance_matrix
     if distance_matrix == "euclidean":
@@ -304,25 +293,68 @@ def handle_upload(distance_matrix):
         resp = make_response(
             'The passed parameter maxAutoCycleAbort must be an integer.', 400)
         return resp
+    
+    # If parameter given, perform pausilibity check for parallelCalculations
+    try:
+        if request.args.get('parallelCalculations'):
+            simultaneous_calculations = int(request.args.get('parallelCalculations'))
+            if simultaneous_calculations < 1:
+                logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
+                             api_str, request.args.get('parallelCalculations'))
+                resp = make_response(
+                    'The passed parameter parallelCalculations must be at least one.', 400)
+                return resp
+            if simultaneous_calculations == 1:
+                simultaneous_calculating = 0
+            else:
+                simultaneous_calculating = 1
+    except ValueError:
+        logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
+                     api_str, request.args.get('parallelCalculations'))
+        resp = make_response(
+            'The passed parameter parallelCalculations must be an integer.', 400)
+        return resp
 
     # Handle uploaded file
     if 'file' in request.files:
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
-            csv_file = filestorage_to_fileobject(file)
+            csv_file = filestorage_to_bytes(file)
 
-            # creating a csv reader object
-            csvreader = csv.DictReader(csv_file)
-            # converting the data into an array of JSON objects (one JSON object per line)
-            data = list(csvreader)
+            if request.args.get('csvDecimalSeparator'):
+                if request.args.get('csvDecimalSeparator').lower() == 'us':
+                    csv_content = pd.read_csv(csv_file, sep=None, decimal='.', thousands=',', engine='python')
+                else:
+                    # Use European format if US format is not explicitly specified
+                    csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+            else:
+                # Use European format if US format is not explicitly specified
+                csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+            
+            data = csv_content.to_dict(orient='records')
 
-            # Closing the file without saving them to the hard disk.
             csv_file.close()
         elif file.filename.lower().endswith(".json"):
-            json_file = filestorage_to_fileobject(file)
+            json_file = bytes_to_text(file)
             data = json.loads(json_file.read())
             # Closing the file without saving them to the hard disk.
             json_file.close()
+        elif file.filename.lower().endswith(".xls") or file.filename.lower().endswith(".xlsx"):
+            excel_file = filestorage_to_bytes(file)
+
+            sheet_name = 0
+            if request.args.get('sheetName'):
+                # If a worksheet name was passed, use it, otherwise use the first worksheet
+                sheet_name = request.args.get('sheetName')
+            
+            try:
+                excel_content = pd.read_excel(excel_file, sheet_name)
+            except ValueError:
+                resp = make_response('The specified worksheet does not exist in the uploaded Excel file.', 400)
+                return resp
+            data = excel_content.to_dict(orient='records')
+
+            excel_file.close()
         else:
             resp = make_response('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
             return resp
@@ -340,7 +372,7 @@ def handle_upload(distance_matrix):
         calculated_data = kmeans.kmeansMain(data, k, use_elbow, max_centroids_abort,
                                             min_pct_elbow, c, auto_cycle, min_pct_auto_cycle,
                                             max_auto_cycle_abort, r, distance_matrix_int,
-                                            norm_method)
+                                            norm_method, simultaneous_calculating, simultaneous_calculations)
         logging.debug("Excuting k-Means with the following configuration:\n\tk: %s"
                       + "\n\tuse_elbow: %s\n\tmaxCentroidsAbort: %s\n\tminPctElbow: %s\n\tc: %s"
                       + "\n\tauto_cycle: %s\n\tminPctAutoCycle: %s\n\tmaxAutoCycleAbort: %s"
@@ -361,3 +393,21 @@ def handle_upload(distance_matrix):
         logging.error("An error occured while processing uploaded data.")
         resp = make_response('The uploaded file could not be processed.', 400)
         return resp
+
+def bytes_to_text(filestorage: FileStorage) -> io.TextIOWrapper:
+    """ this function converts a Flask FileStorage object into a FileObject """
+    # Returns a bytes stream of the data of the uploaded file
+    temp_file = filestorage_to_bytes(filestorage)
+    # Conversion of the data into a file object readable in text mode
+    temp_file = io.TextIOWrapper(temp_file, encoding='utf-8')
+    return temp_file
+
+def filestorage_to_bytes(filestorage: FileStorage) -> io.BytesIO:
+    """ this function converts a Flask FileStorage object into a BytesIO object """
+    # Returns a bytes stream of the data of the uploaded file
+    temp_file = filestorage.stream
+    # Set reading pointer to start position
+    temp_file.seek(0)
+    # Conversion of the stream into readable bytes
+    temp_file = io.BytesIO(temp_file.read())
+    return temp_file

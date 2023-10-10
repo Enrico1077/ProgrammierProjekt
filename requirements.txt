@@ -3,4 +3,7 @@ waitress
 pylint
 numpy
 matplotlib
-multiprocessing
+pytest
+pandas
+openpyxl
+xlrd

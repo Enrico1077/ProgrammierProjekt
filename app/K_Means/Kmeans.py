@@ -310,7 +310,7 @@ def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZ
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2):
+def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2, multi=1, simu=8):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei
@@ -322,8 +322,8 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValue=0
     Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
-    multi=1             #Sollen k's parralel berechnet werden?
-    simu=8              #Anzahl der parralelen Berechnungen für k
+    #multi=1             #Sollen k's parralel berechnet werden?
+    #simu=8              #Anzahl der parralelen Berechnungen für k
 
     #k=10                #Anzahl der Zentroide (k)
     #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
@@ -355,7 +355,7 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValueZet=minLocation(Datenpunkte)
     bestDp=None
     avgDistance=None
-    outK=None
+    outK=-1
 
     if Elbow==0:
         bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
@@ -424,11 +424,15 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
 
                 if (oldAvgDistance+gradient)>=aktAvgDistance:
                         bestDp=result_data
-                        avgDistance=aktAvgDistance                  
+                        avgDistance=aktAvgDistance 
+                        outK=i                
                         print("Elbow bei k= "+str(i))
                         aktElbow=True
                         break
-
+                
+            if outK == -1:
+                outK=maxK 
+                         
             bestDp=result_data
             avgDistance=aktAvgDistance
 

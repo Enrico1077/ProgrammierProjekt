@@ -4,3 +4,6 @@ pylint
 numpy
 matplotlib
 pytest
+pandas
+openpyxl
+xlrd

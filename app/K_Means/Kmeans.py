@@ -174,7 +174,7 @@ def KmeansFesterZyk(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _
 
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
-        ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
+        #ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         
     
@@ -196,6 +196,8 @@ def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Z
 
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
+        if oldMiss==0.0:
+            break
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         if ProzVerbes<_ZykKrit:

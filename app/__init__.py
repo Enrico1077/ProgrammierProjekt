@@ -30,6 +30,7 @@ def create_app(test_config=None):
     def add_headers(response):
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Content-Type'] = 'application/json'
+        response.headers['Cache-Control'] = 'no-store'
         return response
 
     # blueprint for handling http post requests

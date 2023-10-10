@@ -5,7 +5,7 @@ import io
 import json
 import logging
 import pandas as pd
-from flask import (Blueprint, make_response, request, jsonify)
+from flask import (Blueprint, Response, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
 from ..K_Means import Kmeans as kmeans
 from ..logging_config import setup_logging
@@ -152,12 +152,8 @@ def handle_upload(distance_matrix):
     elif distance_matrix == "manhattan":
         distance_matrix_int = DistanceMatrix.manhattan
     else:
-        logging.info(
-            "The API %s was called without a valid distance matrix. Parameter passed: %s", api_str, distance_matrix)
-        resp = make_response(
-            'No valid value for distance matrix was specified. '
-            + 'Please specify euclidean or manhattan.', 400)
-        return resp
+        logging.info("The API %s was called without a valid distance matrix. Parameter passed: %s", api_str, distance_matrix)
+        return createErrorResponse('No valid value for distance matrix was specified. Please specify euclidean or manhattan.', 400)
 
     # If parameter given, perform pausilibity check for k
     try:
@@ -166,14 +162,11 @@ def handle_upload(distance_matrix):
             if k < 1:
                 logging.info(
                     "The API %s was called with invalid k. Parameter passed: %s", api_str, request.args.get('k'))
-                resp = make_response(
-                    'The passed parameter k must be at least one.', 400)
-                return resp
+                return createErrorResponse('The passed parameter k must be at least one.', 400)
     except ValueError:
         logging.info("The API %s was called with invalid k. Parameter passed: %s",
                      api_str, request.args.get('k'))
-        resp = make_response('The passed parameter k must be an integer.', 400)
-        return resp
+        return createErrorResponse('The passed parameter k must be an integer.', 400)
 
     # If parameter given, perform pausilibity check for normMethod
     try:
@@ -182,16 +175,14 @@ def handle_upload(distance_matrix):
             if norm_method < 0 or norm_method > 2:
                 logging.info("The API %s was called with invalid normMethod. Parameter passed: %s",
                              api_str, request.args.get('normMethod'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter normMethod must be 0 for none, '
                     + '1 for min-max normalization, or 2 for z-normalization.', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid normMethod. Parameter passed: %s",
                      api_str, request.args.get('normMethod'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter normMethod must be an integer.', 400)
-        return resp
 
     # If parameter given, perform pausilibity check for r
     try:
@@ -200,14 +191,12 @@ def handle_upload(distance_matrix):
             if r < 1:
                 logging.info(
                     "The API %s was called with invalid r. Parameter passed: %s", api_str, request.args.get('r'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter r must be at least one.', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid r. Parameter passed: %s",
                      api_str, request.args.get('r'))
-        resp = make_response('The passed parameter r must be an integer.', 400)
-        return resp
+        return createErrorResponse('The passed parameter r must be an integer.', 400)
 
     # If parameter given, perform pausilibity check for maxCentroidsAbort
     try:
@@ -216,15 +205,13 @@ def handle_upload(distance_matrix):
             if max_centroids_abort < 1:
                 logging.info("The API %s was called with invalid maxCentroidsAbort. Parameter passed: %s",
                              api_str, request.args.get('maxCentroidsAbort'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter maxCentroidsAbort must be at least one.', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid maxCentroidsAbort. Parameter passed: %s",
                      api_str, request.args.get('maxCentroidsAbort'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter maxCentroidsAbort must be an integer.', 400)
-        return resp
 
     # If parameter given, perform pausilibity check for minPctElbow
     try:
@@ -233,15 +220,13 @@ def handle_upload(distance_matrix):
             if min_pct_elbow < 0 or min_pct_elbow > 100:
                 logging.info(
                     "The API %s was called with invalid minPctElbow. Parameter passed: %s", api_str, request.args.get('minPctElbow'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter minPctElbow must be a percentage value (0 to 100).', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid minPctElbow. Parameter passed: %s",
                      api_str, request.args.get('minPctElbow'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter minPctElbow must be a floating point number.', 400)
-        return resp
 
     # If parameter given, perform pausilibity check for c
     try:
@@ -250,14 +235,12 @@ def handle_upload(distance_matrix):
             if c < 1:
                 logging.info(
                     "The API %s was called with invalid c. Parameter passed: %s", api_str, request.args.get('c'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter c must be at least one.', 400)
-                return resp
     except ValueError:
         logging.info(
             "The API %s was called with invalid c. Parameter passed: %s", api_str, request.args.get('c'))
-        resp = make_response('The passed parameter c must be an integer.', 400)
-        return resp
+        return createErrorResponse('The passed parameter c must be an integer.', 400)
 
     # If parameter given, perform pausilibity check for minPctAutoCycle
     try:
@@ -266,16 +249,14 @@ def handle_upload(distance_matrix):
             if min_pct_auto_cycle < 0 or min_pct_auto_cycle > 100:
                 logging.info("The API %s was called with invalid minPctAutoCycle. Parameter passed: %s",
                              api_str, request.args.get('minPctAutoCycle'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter minPctAutoCycle must '
                     + 'be a percentage value (0 to 100).', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid minPctAutoCycle. Parameter passed: %s",
                      api_str, request.args.get('minPctAutoCycle'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter minPctAutoCycle must be a floating point number.', 400)
-        return resp
 
     # If parameter given, perform pausilibity check for maxAutoCycleAbort
     try:
@@ -284,15 +265,13 @@ def handle_upload(distance_matrix):
             if max_auto_cycle_abort < 1:
                 logging.info("The API %s was called with invalid maxAutoCycleAbort. Parameter passed: %s",
                              api_str, request.args.get('maxAutoCycleAbort'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter maxAutoCycleAbort must be at least one.', 400)
-                return resp
     except ValueError:
         logging.info("The API %s was called with invalid maxAutoCycleAbort. Parameter passed: %s",
                      api_str, request.args.get('maxAutoCycleAbort'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter maxAutoCycleAbort must be an integer.', 400)
-        return resp
     
     # If parameter given, perform pausilibity check for parallelCalculations
     try:
@@ -301,9 +280,8 @@ def handle_upload(distance_matrix):
             if simultaneous_calculations < 1:
                 logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
                              api_str, request.args.get('parallelCalculations'))
-                resp = make_response(
+                return createErrorResponse(
                     'The passed parameter parallelCalculations must be at least one.', 400)
-                return resp
             if simultaneous_calculations == 1:
                 simultaneous_calculating = 0
             else:
@@ -311,9 +289,8 @@ def handle_upload(distance_matrix):
     except ValueError:
         logging.info("The API %s was called with invalid parallelCalculations. Parameter passed: %s",
                      api_str, request.args.get('parallelCalculations'))
-        resp = make_response(
+        return createErrorResponse(
             'The passed parameter parallelCalculations must be an integer.', 400)
-        return resp
 
     # Handle uploaded file
     if 'file' in request.files:
@@ -350,18 +327,18 @@ def handle_upload(distance_matrix):
             try:
                 excel_content = pd.read_excel(excel_file, sheet_name)
             except ValueError:
-                resp = make_response('The specified worksheet does not exist in the uploaded Excel file.', 400)
-                return resp
+                logging.info("The specified worksheet does not exist in the uploaded Excel file.")
+                return createErrorResponse('The specified worksheet does not exist in the uploaded Excel file.', 400)
             data = excel_content.to_dict(orient='records')
 
             excel_file.close()
         else:
-            resp = make_response('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
-            return resp
+            logging.info("An incorrect file format was uploaded. Filename: %s", file.filename)
+            return createErrorResponse('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
     else:
         # Return error message if no file was uploaded
-        resp = make_response('No file was uploaded.', 400)
-        return resp
+        logging.info("The API %s was called without a file.",api_str)
+        return createErrorResponse('No file was uploaded.', 400)
 
     # execute k-Means
     if data:
@@ -385,14 +362,12 @@ def handle_upload(distance_matrix):
         except TypeError:
             logging.error(
                 "An error occured while converting calucalted data into JSON.")
-            resp = make_response(
+            return createErrorResponse(
                 'Internal server error: The calculated data could not be converted into JSON.',
                 500)
-            return resp
     else:
         logging.error("An error occured while processing uploaded data.")
-        resp = make_response('The uploaded file could not be processed.', 400)
-        return resp
+        return createErrorResponse('The uploaded file could not be processed.', 400)
 
 def bytes_to_text(filestorage: FileStorage) -> io.TextIOWrapper:
     """ this function converts a Flask FileStorage object into a FileObject """
@@ -411,3 +386,13 @@ def filestorage_to_bytes(filestorage: FileStorage) -> io.BytesIO:
     # Conversion of the stream into readable bytes
     temp_file = io.BytesIO(temp_file.read())
     return temp_file
+
+def createErrorResponse(message: str, code: int) -> Response:
+    error_response = {
+        "error": {
+            "code": code,
+            "message": message
+        }
+    }
+    resp = make_response(jsonify(error_response), code)
+    return resp

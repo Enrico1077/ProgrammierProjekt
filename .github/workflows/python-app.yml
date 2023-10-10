@@ -37,3 +37,9 @@ jobs:
     - name: Test with pytest and generate Report
       run: |
         pytest --cov=app --cov-report=xml:cov.xml app/Tests/
+    - name: Show coverage report
+      run: |
+        pip install coverage
+        coverage html -d coverage_report
+        python -m webbrowser coverage_report/index.html
+      if: always()

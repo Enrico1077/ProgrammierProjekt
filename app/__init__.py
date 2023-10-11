@@ -1,7 +1,7 @@
 """ module to initialize a flask backend server """
 
 import os
-from flask import Flask
+from flask import Flask, jsonify, make_response
 from .routes import upload
 
 # create flask app
@@ -26,12 +26,23 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    @app.after_request
+    def add_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Content-Type'] = 'application/json'
+        response.headers['Cache-Control'] = 'no-store'
+        return response
+
     # blueprint for handling http post requests
     app.register_blueprint(upload.bp)
 
     # a simple API to test the connection
     @app.route('/hello')
     def hello():
-        return 'Hello from the coolest backend server in the world!'
+        msg = {
+            "message": "Hello from the coolest backend server in the world!"
+        }
+        resp = make_response(jsonify(msg), 200)
+        return resp
 
     return app

@@ -4,20 +4,20 @@ import csv
 import io
 import json
 import logging
+import multiprocessing
 import pandas as pd
 from flask import (Blueprint, Response, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
+import xlrd
 from ..K_Means import Kmeans as kmeans
 from ..logging_config import setup_logging
 from ..K_Means.Kmeans import Normmethod, DistanceMatrix
-import multiprocessing
-
 setup_logging()
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('upload', __name__, url_prefix='/kmeans')
 
-
+# This method/API is depricated and should no longer be used; for compatibility reasons it is still supported for the time being
 @bp.route('/csv', methods=['POST'])
 def handle_cvs_upload():
     """ this function handles an upload of a csv file """
@@ -74,7 +74,7 @@ def handle_cvs_upload():
     resp = make_response('No CSV file was uploaded.', 400)
     return resp
 
-
+# This method/API is depricated and should no longer be used; for compatibility reasons it is still supported for the time being
 @bp.route('/json', methods=['POST'])
 def handle_json_jpload():
     """ this function handles an upload of a json file """
@@ -126,14 +126,12 @@ def handle_json_jpload():
     resp = make_response('No JSON file was uploaded.', 400)
     return resp
 
-# new routes
-
 @bp.route('/<distance_matrix>', methods=['POST'])
 def handle_upload(distance_matrix):
     """ this function handles an upload of a file """
     api_str = "\"kmeans/<distance_matrix>\""
 
-    # configuration parameters with default values
+    # configuration parameters with its default values
     k = 0
     norm_method = Normmethod.none
     r = 5
@@ -296,27 +294,47 @@ def handle_upload(distance_matrix):
     if 'file' in request.files:
         file = request.files.get('file')
         if file.filename.lower().endswith(".csv"):
+            # a csv file was uploaded
             csv_file = filestorage_to_bytes(file)
 
             if request.args.get('csvDecimalSeparator'):
                 if request.args.get('csvDecimalSeparator').lower() == 'us':
-                    csv_content = pd.read_csv(csv_file, sep=None, decimal='.', thousands=',', engine='python')
+                    try:
+                        csv_content = pd.read_csv(csv_file, sep=None, decimal='.', thousands=',', engine='python')
+                    except csv.Error as e:
+                        logging.info("The API %s was called but the uploaded CSV file could not be processd. Error message: %s", api_str, e)
+                        return createErrorResponse('The uploaded CSV file could not be processed; it may be corrupted.', 400)
                 else:
                     # Use European format if US format is not explicitly specified
-                    csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+                    try:
+                        csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+                    except csv.Error as e:
+                        logging.info("The API %s was called but the uploaded CSV file could not be processd. Error message: %s", api_str, e)
+                        return createErrorResponse('The uploaded CSV file could not be processed; it may be corrupted.', 400)
             else:
                 # Use European format if US format is not explicitly specified
-                csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+                try:
+                    csv_content = pd.read_csv(csv_file, sep=None, decimal=',', thousands='.', engine='python')
+                except csv.Error as e:
+                    logging.info("The API %s was called but the uploaded CSV file could not be processd. Error message: %s", api_str, e)
+                    return createErrorResponse('The uploaded CSV file could not be processed; it may be corrupted.', 400)
+                except UnicodeDecodeError as e:
+                    logging.info("The API %s was called but the uploaded CSV file could not be processd. Error message: %s", api_str, e)
+                    return createErrorResponse('The uploaded CSV file could not be processed because it contains illegal characters.', 400)
             
             data = csv_content.to_dict(orient='records')
 
+            # Closing the file without saving them to the hard disk.
             csv_file.close()
         elif file.filename.lower().endswith(".json"):
+            # a json file was uploaded
             json_file = bytes_to_text(file)
             data = json.loads(json_file.read())
+
             # Closing the file without saving them to the hard disk.
             json_file.close()
         elif file.filename.lower().endswith(".xls") or file.filename.lower().endswith(".xlsx"):
+            # an excel file was uploaded
             excel_file = filestorage_to_bytes(file)
 
             sheet_name = 0
@@ -326,15 +344,20 @@ def handle_upload(distance_matrix):
             
             try:
                 excel_content = pd.read_excel(excel_file, sheet_name)
-            except ValueError:
-                logging.info("The specified worksheet does not exist in the uploaded Excel file.")
-                return createErrorResponse('The specified worksheet does not exist in the uploaded Excel file.', 400)
+            except ValueError as e:
+                logging.info("The specified worksheet does not exist in the uploaded Excel file or there is no worksheet. Error message: %s", e)
+                return createErrorResponse('The specified worksheet does not exist in the uploaded Excel file or there is no worksheet.', 400)
+            except xlrd.biffh.XLRDError as e:
+                logging.info("The uploaded Excel file could not be processed; it may be corrupted; Error message: %s", e)
+                return createErrorResponse('The uploaded Excel file could not be processed; it may be corrupted.', 400)
             data = excel_content.to_dict(orient='records')
 
+            # Closing the file without saving them to the hard disk.
             excel_file.close()
         else:
+            # an unsupported file format was uploaded
             logging.info("An incorrect file format was uploaded. Filename: %s", file.filename)
-            return createErrorResponse('An incorrect file format was uploaded. Only CSV and JSON are supported.', 400)
+            return createErrorResponse('An incorrect file format was uploaded. Only CSV, JSON, XLSX and XLS are supported.', 400)
     else:
         # Return error message if no file was uploaded
         logging.info("The API %s was called without a file.",api_str)
@@ -342,7 +365,7 @@ def handle_upload(distance_matrix):
 
     # execute k-Means
     if data:
-        # calculated_data = kmeans.kmeansMain(data, param_k, 0)
+        # executing k-means algorithm
         use_elbow = 1 if k == 0 else 0
         auto_cycle = 1 if c == 0 else 0
         multiprocessing.freeze_support()
@@ -370,7 +393,7 @@ def handle_upload(distance_matrix):
         return createErrorResponse('The uploaded file could not be processed.', 400)
 
 def bytes_to_text(filestorage: FileStorage) -> io.TextIOWrapper:
-    """ this function converts a Flask FileStorage object into a FileObject """
+    """ this function converts a Flask FileStorage object into a FileObject (TextIOWrapper) """
     # Returns a bytes stream of the data of the uploaded file
     temp_file = filestorage_to_bytes(filestorage)
     # Conversion of the data into a file object readable in text mode
@@ -388,6 +411,7 @@ def filestorage_to_bytes(filestorage: FileStorage) -> io.BytesIO:
     return temp_file
 
 def createErrorResponse(message: str, code: int) -> Response:
+    """ this function creates a http error response with the given status code """
     error_response = {
         "error": {
             "code": code,

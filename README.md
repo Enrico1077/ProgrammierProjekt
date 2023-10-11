@@ -66,7 +66,7 @@ To use the Manhattan distance:
 /kmeans/manhattan
 ```
 
-The body must have a field called "file" which contains a .csv, .json, .xlsx or .xls file as value.
+The body must have a field called "file" which contains a .csv, .json, .xlsx or .xls file as value. __Please note the parameter csvDecimalSeparator to configure the display of decimal numbers correctly! Default setting is the European format!__
 The API accepts the parameters shown in the table as query parameters. All parameters are optional! If a parameter is not specified, the default value given in the table is used.
 The API returns the calculated data as a JSON object.
 

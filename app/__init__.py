@@ -28,6 +28,7 @@ def create_app(test_config=None):
 
     @app.after_request
     def add_headers(response):
+        """ Adding some global properties to all response headers """
         response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Content-Type'] = 'application/json'
         response.headers['Cache-Control'] = 'no-store'

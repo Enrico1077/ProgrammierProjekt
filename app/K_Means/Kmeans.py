@@ -7,16 +7,8 @@ import copy
 from . import DataHandling #
 import threading
 import queue
+from .parameter import KMeansParameter
 
-
-class Normmethod(enum.IntEnum):
-    none = 0
-    min_max = 1
-    z = 2
-
-class DistanceMatrix(enum.IntEnum):
-    euclidean = 0
-    manhattan = 1
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -314,7 +306,7 @@ def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZ
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2, multi=1, simu=8):
+def kmeansMain(InputData, params: KMeansParameter):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei
@@ -326,22 +318,22 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValue=0
     Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
-    #multi=1             #Sollen k's parralel berechnet werden?
-    #simu=8              #Anzahl der parralelen Berechnungen für k
+    multi=params.parallel_calculating             #Sollen k's parralel berechnet werden?
+    simu=params.parallel_calculations             #Anzahl der parralelen Berechnungen für k
 
-    #k=10                #Anzahl der Zentroide (k)
-    #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
-    #maxK=100            #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
-    #inaccu=0            #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
+    k=params.k                              #Anzahl der Zentroide (k)
+    Elbow=params.use_elbow                  #"0" für k Zentroide, "1" für Elbow verfahren
+    maxK=params.max_centroids_abort         #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
+    inaccu=params.min_pct_elbow             #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
 
-    #Zyklen=10           #Anzahl der Wiederholungen im Algorithmus
-    #autoZyk=1           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
-    #ZykKrit=0.5         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
-    #stopZyk=25          #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
+    Zyklen=params.c                                 #Anzahl der Wiederholungen im Algorithmus
+    autoZyk=params.auto_cycle                       #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
+    ZykKrit=params.min_pct_auto_cycle               #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
+    stopZyk=params.max_auto_cycle_abort             #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-    #Repeats=5          #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
-    #LenMes=0            #"0" für Euklid, "1" für Manhatten
-    #normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+    Repeats=params.r                            #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+    LenMes=params.distance_matrix               #"0" für Euklid, "1" für Manhatten
+    normali=params.norm_method                  #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
     if IsRandom==1:
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)

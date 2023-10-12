@@ -30,7 +30,7 @@ Run unit tests locally:
 pytest app/Tests/
 ```
 
-Run the app in dev mode (it uses port 5000):
+Once the project's dependencies are installed, the project can be run in dev mode (it uses port 5000):
 
 ```
 flask --app app run --debug
@@ -91,22 +91,4 @@ Examples:
 ```
 ```
 /kmeans/euclidean
-```
-
-### k-Means API v1.0 (deprecated)
-
-These APIs are still supported, but are deprecated and should no longer be used. Use the above APIs instead.
-
-**Upload a CSV file (HTTP POST):**
-The body must have a field called "file" which contains a CSV file as value. The parameter k can be passed optionally. If it is not passed, Elbow is used to determine the optimal k.
-
-```
-/kmeans/csv?k=10
-```
-
-**Upload a JSON file (HTTP POST):**
-The body must have a field called "file" which contains a JSON file as value. The parameter k can be passed optionally. If it is not passed, Elbow is used to determine the optimal k.
-
-```
-/kmeans/json?k=10
 ```

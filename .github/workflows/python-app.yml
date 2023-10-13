@@ -45,7 +45,7 @@ jobs:
     - name: Calculate Test Coverage
       id: coverage
       run: |
-        total_coverage=$(grep -oP 'Total</td>\s+<td class="right" data-ratio="[\d ]+">(\d+)%' cov/index.html | sed -n 's/Total<\/td>\s+<td class="right" data-ratio="[\d ]\+">\(\d\+\)%/\1/p')
+        total_coverage=$(grep -oP 'Coverage report:\s*<span class="pc_cov">(\d+)%</span>' cov/index.html | sed -n 's/Coverage report:\s*<span class="pc_cov">\(\d\+\)%<\/span>/\1/p')
         echo "Total Coverage: $total_coverage%"
         echo "::set-output name=coverage::$total_coverage"
     - name: Check Test Coverage

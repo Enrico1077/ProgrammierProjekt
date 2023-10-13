@@ -41,22 +41,23 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: coverage-report
-        path: cov.html
+        path: cov
     - name: Calculate Test Coverage
       id: coverage
       run: |
-        coverage=$(grep -E -o "[0-9]+\.[0-9]+" cov/index.html | head -1)
-        echo "Coverage: $coverage%"
-        echo "::set-output name=coverage::$coverage"
+        total_coverage=$(grep -oP 'Total</td>\s+<td class="right" data-ratio="[\d ]+">(\d+)%' cov/index.html | sed -n 's/Total<\/td>\s+<td class="right" data-ratio="[\d ]\+">\(\d\+\)%/\1/p')
+        echo "Total Coverage: $total_coverage%"
+        echo "::set-output name=coverage::$total_coverage"
     - name: Check Test Coverage
       run: |
         coverage=${{ steps.coverage.outputs.coverage }}
-        if [[ -n "$coverage" && $(echo "$coverage >= 70" | bc -l) -eq 1 ]]; then
+        if [[ -n "$coverage" && $coverage -ge 70 ]]; then
           echo "Test coverage is greater than or equal to 70%"
         else
           echo "Test coverage is less than 70%. Aborting the workflow."
           exit 1
         fi
+
 
    
 

@@ -42,5 +42,20 @@ jobs:
       with:
         name: coverage-report
         path: cov.html
+    - name: Calculate Test Coverage
+      id: coverage
+      run: |
+        coverage=$(grep -E -o "[0-9]+\.[0-9]+" cov.html | head -1)
+        echo "Coverage: $coverage%"
+        echo "::set-output name=coverage::$coverage"
+    - name: Check Test Coverage
+      run: |
+        coverage=${{ steps.coverage.outputs.coverage }}
+        if (( $(echo "$coverage >= 70" | bc -l) )); then
+          echo "Test coverage is greater than or equal to 70%"
+        else
+          echo "Test coverage is less than 70%. Aborting the workflow."
+          exit 1
+        fi
     
 

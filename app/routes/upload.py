@@ -9,9 +9,9 @@ import pandas as pd
 from flask import (Blueprint, Response, make_response, request, jsonify)
 from werkzeug.datastructures import FileStorage
 import xlrd
-from ..K_Means import Kmeans as kmeans
+from ..k_means import k_means as kmeans
 from ..logging_config import setup_logging
-from ..K_Means.parameter import KMeansParameter
+from ..k_means.parameter import KMeansParameter
 
 # initialize logger with global configurations
 setup_logging()

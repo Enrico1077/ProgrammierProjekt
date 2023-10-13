@@ -1,4 +1,4 @@
-from . import Datenpunkt as dp #
+from . import datapoint as dp #
 import csv
 import json
 import numpy as np

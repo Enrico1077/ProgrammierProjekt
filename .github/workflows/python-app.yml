@@ -52,11 +52,14 @@ jobs:
             soup = BeautifulSoup(file, 'html.parser')
             coverage = soup.find('span', class_='pc_cov').get_text()
             print(coverage)
+        with open("coverage.txt", "w") as coverage_file:
+            coverage_file.write(coverage)
         EOF
-        echo "::set-output name=coverage::$coverage"
+        echo "Coverage report calculated"
+        echo "::set-env name=COVERAGE_REPORT::$(cat coverage.txt)"
     - name: Check Test Coverage
       run: |
-        coverage=${{ steps.coverage.outputs.coverage }}
+        coverage=$COVERAGE_REPORT
         if [[ -n "$coverage" && $coverage -ge 70 ]]; then
           echo "Test coverage is greater than or equal to 70%"
         else

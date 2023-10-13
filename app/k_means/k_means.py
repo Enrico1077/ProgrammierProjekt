@@ -1,10 +1,10 @@
 import enum
-from . import Datenpunkt as dp #
+from . import datapoint as dp #
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-from . import DataHandling #
+from . import data_handling #
 import threading
 import queue
 from .parameter import KMeansParameter
@@ -338,7 +338,7 @@ def kmeansMain(InputData, params: KMeansParameter):
     if IsRandom==1:
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
     else:
-        Datenpunkte =DataHandling.getAPIData(InputData) 
+        Datenpunkte =data_handling.getAPIData(InputData) 
         #Datenpunkte = DataHandling.getData("app\K_Means\Examples\Example_Programmierprojekt.csv","c")
         Dimension=Datenpunkte[0].getPosition().size
 
@@ -446,7 +446,7 @@ def kmeansMain(InputData, params: KMeansParameter):
     InfoLine["k"]=str(outK)
     InfoLine["avgDistance"]=str(avgDistance)
     Output.append(InfoLine)
-    Output.append(DataHandling.dpToJson(bestDp))
+    Output.append(data_handling.dpToJson(bestDp))
 
     return Output
     

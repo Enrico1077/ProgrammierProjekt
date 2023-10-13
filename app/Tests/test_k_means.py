@@ -1,8 +1,8 @@
 ####In dieser Datei können Tests definiert werden######
 import numpy as np
-from app.K_Means import Datenpunkt as dp
-from app.K_Means import Kmeans 
-from app.K_Means import DataHandling as dh
+from app.k_means import datapoint as dp
+from app.k_means import k_means 
+from app.k_means import data_handling as dh
 
 
 def test_DpExcential():
@@ -15,12 +15,12 @@ def test_DpExcential():
 def test_EuklidDistance():
     dp0=dp.Datenpunkt(np.array([0,0]))
     dp1=dp.Datenpunkt(np.array([2,2]))
-    result=Kmeans.EuklidDistance(dp0,dp1)
+    result=k_means.EuklidDistance(dp0,dp1)
     assert result==8**0.5
 
 
 def test_ranData():
-    dp0=Kmeans.randArrData(1,2,[10,10],[0,0])
+    dp0=k_means.randArrData(1,2,[10,10],[0,0])
     location=dp0[0].getPosition()
     assert location.size==2
     assert location[0]>=0 and location[1]>=0
@@ -30,7 +30,7 @@ def test_ManhattenDistance():
     dp0=dp.Datenpunkt(np.array([0,0]))
     dp1=dp.Datenpunkt(np.array([2,2]))
 
-    result=Kmeans.ManhattenDistance(dp0,dp1)
+    result=k_means.ManhattenDistance(dp0,dp1)
     assert result==4
 
 
@@ -38,8 +38,8 @@ def test_FindMid():
     dp0=dp.Datenpunkt(np.array([0,0,0]))
     dp1=dp.Datenpunkt(np.array([2,2,2]))
 
-    result1=Kmeans.FindMid([dp0,dp1])
-    result2=Kmeans.FindMid([dp0,dp0])   
+    result1=k_means.FindMid([dp0,dp1])
+    result2=k_means.FindMid([dp0,dp0])   
     for i in range (2):
         assert result1[i]==1
         assert result2[i]==0
@@ -51,7 +51,7 @@ def test_MatchDpZent():
     zt0=dp.Datenpunkt(np.array([1,2,1]))
     zt1=dp.Datenpunkt(np.array([8,7,9]))
 
-    Kmeans.MatchDpZent([dp0,dp1],[zt0,zt1],0)
+    k_means.MatchDpZent([dp0,dp1],[zt0,zt1],0)
     assert dp0.getNextCentroid()==zt0
     assert dp1.getNextCentroid()==zt1
 
@@ -65,7 +65,7 @@ def test_newCentroids():
     Datenpunkte = [dp0, dp1, dp2]
     Zentroide = [centroid1, centroid2]
 
-    Kmeans.newCentroids(Datenpunkte, Zentroide)
+    k_means.newCentroids(Datenpunkte, Zentroide)
     assert np.array_equal(centroid1.getPosition(), np.array([1.0, 1.0, 1.0]))
     assert np.array_equal(centroid2.getPosition(), np.array([3.0, 3.0, 3.0]))
 
@@ -76,7 +76,7 @@ def test_maxLocation():
     dp2 = dp.Datenpunkt(np.array([4, 4, 4]))
     DataPoints = [dp0, dp1, dp2]
 
-    result = Kmeans.maxLocation(DataPoints)
+    result = k_means.maxLocation(DataPoints)
     expected_result = np.array([4.0, 4.0, 4.0])
     assert np.array_equal(result, expected_result)
 
@@ -87,7 +87,7 @@ def test_minLocation():
     dp2 = dp.Datenpunkt(np.array([-1, -1, -1]))
     DataPoints = [dp0, dp1, dp2]
 
-    result = Kmeans.minLocation(DataPoints)
+    result = k_means.minLocation(DataPoints)
     expected_result = np.array([-1.0, -1.0, -1.0])
     assert np.array_equal(result, expected_result)
 
@@ -98,7 +98,7 @@ def test_MinMaxNorm():
     dp2 = dp.Datenpunkt(np.array([4, 4, 4]))
     DataPoints = [dp0, dp1, dp2]
 
-    Kmeans.MinMaxNorm(DataPoints)
+    k_means.MinMaxNorm(DataPoints)
     expected_dp0 = np.array([0.0, 0.0, 0.0])
     expected_dp1 = np.array([0.5, 0.5, 0.5])
     expected_dp2 = np.array([1.0, 1.0, 1.0])    
@@ -113,7 +113,7 @@ def test_z_Norm():
     dp2 = dp.Datenpunkt(np.array([4, 4, 4]))
     DataPoints = [dp0, dp1, dp2]
 
-    Kmeans.z_Norm(DataPoints)
+    k_means.z_Norm(DataPoints)
     expected_dp0 = np.array([-1.22474487, -1.22474487, -1.22474487])
     expected_dp1 = np.array([0.0, 0.0, 0.0])
     expected_dp2 = np.array([1.22474487, 1.22474487, 1.22474487])
@@ -128,7 +128,7 @@ def test_retAllPos():
     dp2 = dp.Datenpunkt(np.array([4, 4, 4]))
     DataPoints = [dp0, dp1, dp2]
 
-    result = Kmeans.retAllPos(DataPoints)
+    result = k_means.retAllPos(DataPoints)
     expected_result = np.array([[0.0, 0.0, 0.0], [2.0, 2.0, 2.0], [4.0, 4.0, 4.0]])
     assert np.array_equal(result, expected_result)
 
@@ -145,11 +145,11 @@ def test_AverageMisstake():
     dp1.setNextCentroid(centroid1)
     dp2.setNextCentroid(centroid2)
 
-    result_euclidean = Kmeans.AverageMisstake(DataPoints, Metric=0)
+    result_euclidean = k_means.AverageMisstake(DataPoints, Metric=0)
     expected_euclidean = (np.sqrt(3) + np.sqrt(3) + np.sqrt(3)) / 3
     assert np.isclose(result_euclidean, expected_euclidean)
 
-    result_manhattan = Kmeans.AverageMisstake(DataPoints, Metric=1)
+    result_manhattan = k_means.AverageMisstake(DataPoints, Metric=1)
     expected_manhattan = 3
     assert np.isclose(result_manhattan, expected_manhattan)
 

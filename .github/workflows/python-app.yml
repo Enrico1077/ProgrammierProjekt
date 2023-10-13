@@ -43,7 +43,7 @@ jobs:
         name: coverage-report
         path: cov.html
     - name: Fail if test coverage is less than 70%
-      if: ${{ steps.test.outputs.coverage < 70 && github.event.type == 'pull_request' }}
+      if: ${{ steps.test.outputs.coverage < 70 && github.event.type == 'push' }}
       run: |
         exit 1
 

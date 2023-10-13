@@ -60,6 +60,7 @@ jobs:
     - name: Check Test Coverage
       run: |
         coverage=$COVERAGE_REPORT
+        coverage=${coverage%\%}
         if [[ -n "$coverage" && $coverage -ge 70 ]]; then
           echo "Test coverage is greater than or equal to 70%"
         else

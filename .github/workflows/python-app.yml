@@ -36,7 +36,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest and generate Report
       run: |
-        pytest --cov=app --cov-report=html:cov.html app/Tests/
+        pytest --cov=app --cov-report=html:cov app/Tests/
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v2
       with:
@@ -45,7 +45,7 @@ jobs:
     - name: Calculate Test Coverage
       id: coverage
       run: |
-        coverage=$(grep -E -o "[0-9]+\.[0-9]+" index.html | head -1)
+        coverage=$(grep -E -o "[0-9]+\.[0-9]+" cov/index.html | head -1)
         echo "Coverage: $coverage%"
         echo "::set-output name=coverage::$coverage"
     - name: Check Test Coverage

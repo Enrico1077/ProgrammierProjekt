@@ -56,7 +56,7 @@ jobs:
             coverage_file.write(coverage)
         EOF
         echo "Coverage report calculated"
-        echo "::set-env name=COVERAGE_REPORT::$(cat coverage.txt)"
+        echo "COVERAGE_REPORT=$(cat coverage.txt)" >> $GITHUB_ENV
     - name: Check Test Coverage
       run: |
         coverage=$COVERAGE_REPORT

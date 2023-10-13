@@ -51,11 +51,13 @@ jobs:
     - name: Check Test Coverage
       run: |
         coverage=${{ steps.coverage.outputs.coverage }}
-        if (( $(echo "$coverage >= 70" | bc -l) )); then
+        if [[ -n "$coverage" && $(echo "$coverage >= 70" | bc -l) -eq 1 ]]; then
           echo "Test coverage is greater than or equal to 70%"
         else
           echo "Test coverage is less than 70%. Aborting the workflow."
           exit 1
         fi
+
+   
     
 

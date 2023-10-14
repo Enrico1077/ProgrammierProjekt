@@ -301,7 +301,7 @@ def KmeansRepeatProcess(_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,
 
 
 def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results):
-    result,avgDistance=CompleteKmeans(Repeats, autoZyk, copy.deepcopy(Datenpunkte), Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+    result,avgDistance=CompleteKmeansParalell(Repeats, autoZyk, copy.deepcopy(Datenpunkte), Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
     results.put((result, avgDistance, k))
 
 
@@ -355,13 +355,13 @@ def kmeansMain(InputData, params: KMeansParameter):
     outK=-1
 
     if Elbow==0:
-        bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+        bestDp,avgDistance=CompleteKmeansParalell(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
         outK=k
     elif(Elbow==1 and multi==0):
 
         DistHistroy=[]
         for i in range(1,maxK):
-            result,avgDistance=CompleteKmeansParalell(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+            result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
             DistHistroy.append(avgDistance)
             outK=i
             print("k="+str(i)+" avg. Distance: "+str(avgDistance))

@@ -35,10 +35,27 @@ def test_kmeans_manhattan(client):
     })
     assert response.status_code == 200
 
-def test_kmeans_manhattan_params(client):
-    """this procedure tests the API /kmeans/manhattan with parameters"""
-    response = client.post("/kmeans/manhattan", query_string={"k": 10, "normMethod": 1, "r": 55, "maxCentroidsAbort": 15, "minPctElbow": 0.1, "c": 33, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10}, data={
+def test_kmeans_manhattan_params_json(client):
+    """this procedure tests the API /kmeans/manhattan with parameters and json file"""
+    response = client.post("/kmeans/manhattan", query_string={"k": 10, "normMethod": 1, "r": 5,
+                                                              "maxCentroidsAbort": 15, "minPctElbow": 0.1,
+                                                              "c": 10, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10,
+                                                              "csvDecimalSeparator": "US", "sheetName": "Tabelle1",
+                                                              "parallelCalculations": 8
+                                                              }, data={
         "file": (resources / "example.json").open("rb")
+    })
+    assert response.status_code == 200
+
+def test_kmeans_manhattan_params_csvus(client):
+    """this procedure tests the API /kmeans/manhattan with parameters and csv file"""
+    response = client.post("/kmeans/manhattan", query_string={"k": 10, "normMethod": 1, "r": 5,
+                                                              "maxCentroidsAbort": 15, "minPctElbow": 0.1,
+                                                              "c": 10, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10,
+                                                              "csvDecimalSeparator": "US", "sheetName": "Tabelle1",
+                                                              "parallelCalculations": 8
+                                                              }, data={
+        "file": (resources / "example_US.csv").open("rb")
     })
     assert response.status_code == 200
 
@@ -56,12 +73,41 @@ def test_kmeans_euclidean(client):
     })
     assert response.status_code == 200
 
-def test_kmeans_euclidean_params(client):
-    """this procedure tests the API /kmeans/euclidean with parameters"""
-    response = client.post("/kmeans/euclidean", query_string={"k": 10, "normMethod": 1, "r": 55, "maxCentroidsAbort": 15, "minPctElbow": 0.1, "c": 33, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10}, data={
-        "file": (resources / "example.json").open("rb")
+def test_kmeans_euclidean_params_csveu(client):
+    """this procedure tests the API /kmeans/euclidean with parameters and csv file"""
+    response = client.post("/kmeans/euclidean", query_string={"k": 10, "normMethod": 1, "r": 5,
+                                                              "maxCentroidsAbort": 15, "minPctElbow": 0.1,
+                                                              "c": 10, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10,
+                                                              "csvDecimalSeparator": "EU", "sheetName": "Tabelle1",
+                                                              "parallelCalculations": 8
+                                                              }, data={
+        "file": (resources / "example.csv").open("rb")
     })
     assert response.status_code == 200
+
+def test_kmeans_euclidean_params_excel(client):
+    """this procedure tests the API /kmeans/euclidean with parameters and xlsx file"""
+    response = client.post("/kmeans/euclidean", query_string={"k": 10, "normMethod": 1, "r": 5,
+                                                              "maxCentroidsAbort": 15, "minPctElbow": 0.1,
+                                                              "c": 10, "minPctAutoCycle": 0.1, "maxAutoCycleAbort": 10,
+                                                              "csvDecimalSeparator": "EU", "sheetName": "Tabelle1",
+                                                              "parallelCalculations": 8
+                                                              }, data={
+        "file": (resources / "example.xlsx").open("rb")
+    })
+    assert response.status_code == 200
+
+def test_kmeans_euclidean_params_excel(client):
+    """this procedure tests the API with wrong parameters"""
+    response = client.post("/kmeans/euclidean", query_string={"k": "a", "normMethod": "a", "r": "a",
+                                                              "maxCentroidsAbort": "a", "minPctElbow": "a",
+                                                              "c": "a", "minPctAutoCycle": "a", "maxAutoCycleAbort": "a",
+                                                              "csvDecimalSeparator": 1, "sheetName": 1,
+                                                              "parallelCalculations": "a"
+                                                              }, data={
+        "file": (resources / "example.xlsx").open("rb")
+    })
+    assert response.status_code == 400
 
 def test_kmeans_euclidean_failure(client):
     """this procedure tests the API /kmeans/euclidean"""

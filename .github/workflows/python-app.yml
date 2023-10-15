@@ -36,7 +36,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest and generate Report
       run: |
-        pytest --cov=app --cov-report=html:cov app/Tests/
+        pytest --cov=app --cov-report=html:cov Tests/
     - name: Upload Coverage Report
       uses: actions/upload-artifact@v2
       with:

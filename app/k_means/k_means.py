@@ -1,21 +1,14 @@
 import enum
-from . import Datenpunkt as dp #
+from . import datapoint as dp #
 import numpy as np
 import random
 import matplotlib.pyplot as plt
 import copy 
-from . import DataHandling #
-import multiprocessing
+from . import data_handling #
+import threading
+import queue
+from .parameter import KMeansParameter
 
-
-class Normmethod(enum.IntEnum):
-    none = 0
-    min_max = 1
-    z = 2
-
-class DistanceMatrix(enum.IntEnum):
-    euclidean = 0
-    manhattan = 1
 
 #Erzeugt "Count" viele "Demensions"dimensionale zufällige Datenpunkte mit Werten von MinValue bis "MaxValue"
 def randData(Count, Dimensions, MaxVal, MinVal): 
@@ -176,6 +169,7 @@ def KmeansFesterZyk(_Datenpunkte, _Zyklen, _k, _Dimension, _MaxValue, _LenMes, _
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
         #ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
         #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
+
         
     
 
@@ -196,10 +190,10 @@ def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Z
 
         #Berechnung der prozendtualen Abnahme des Fehlers
         kMiss=AverageMisstake(_Datenpunkte, _LenMes)
+
         if oldMiss==0.0:
             break
         ProzVerbes=((oldMiss-kMiss)/oldMiss)*100
-        #print("Zyklus= "+str(i+1)+" Verbesserung in %: "+str(ProzVerbes))
         if ProzVerbes<_ZykKrit:
             break
 
@@ -268,13 +262,13 @@ def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValue
 #---------------------------------------Multi-Processing--------------------------------------------------
 
 def CompleteKmeansParalell(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
-    m=multiprocessing.Manager()
-    result_queue = m.Queue()
+    #m=multiprocessing.Manager()
+    result_queue = queue.Queue()
 
 
     processes=[]
     for i in range (_Repeats):
-        process = multiprocessing.Process(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
+        process = threading.Thread(target=KmeansRepeatProcess, args=(_autoZyk,copy.deepcopy(_DataPoints),_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit, result_queue))
         process.start()
         processes.append(process)
         print(f'Prozess {i} ist gestartet ')  
@@ -307,12 +301,12 @@ def KmeansRepeatProcess(_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,
 
 
 def KmeansProcess(Repeats, autoZyk, Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results):
-    result,avgDistance=CompleteKmeans(Repeats, autoZyk, copy.deepcopy(Datenpunkte), Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+    result,avgDistance=CompleteKmeansParalell(Repeats, autoZyk, copy.deepcopy(Datenpunkte), Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
     results.put((result, avgDistance, k))
 
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------     
-def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZyk=1 , ZykKrit=0.5 , stopZyk=25 , Repeats=5 , LenMes=0 , normali=2, multi=1, simu=8):
+def kmeansMain(InputData, params: KMeansParameter):
 ####MainAblauf####
 
     #InputData-> Daten aus CSV/JASON Datei
@@ -324,27 +318,28 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     MinValue=0
     Dimension=2         #Anzahl der Dimensionen von Werten bei zufälligen Werten
 
-    #multi=1             #Sollen k's parralel berechnet werden?
-    #simu=8              #Anzahl der parralelen Berechnungen für k
+    multi=params.parallel_calculating             #Sollen k's parralel berechnet werden?
+    simu=params.parallel_calculations             #Anzahl der parralelen Berechnungen für k
 
-    #k=10                #Anzahl der Zentroide (k)
-    #Elbow=1             #"0" für k Zentroide, "1" für Elbow verfahren
-    #maxK=100            #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
-    #inaccu=0            #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
+    k=params.k                              #Anzahl der Zentroide (k)
+    Elbow=params.use_elbow                  #"0" für k Zentroide, "1" für Elbow verfahren
+    maxK=params.max_centroids_abort         #Nach der Berechnung für "maxK" Zentroiden wird das Elbow-Verfahren abgebrochen
+    inaccu=params.min_pct_elbow             #"inacu" beschreibt die benötigte prozentuale Abweichung um einen Elbow festzustellen 
 
-    #Zyklen=10           #Anzahl der Wiederholungen im Algorithmus
-    #autoZyk=1           #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
-    #ZykKrit=0.5         #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
-    #stopZyk=25          #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
+    Zyklen=params.c                                 #Anzahl der Wiederholungen im Algorithmus
+    autoZyk=params.auto_cycle                       #"0" für "Zyklen" Wiederholungen, "1" für "ZykKrit"
+    ZykKrit=params.min_pct_auto_cycle               #Abbruch falls die prozentuale Verbesserung für die Wiederholung kleiner als "ZykKrit" ist
+    stopZyk=params.max_auto_cycle_abort             #Abbruch nach "stopZyk" Wiederholungen auch wenn verbesserung nicht schlechter als "kKrit"
 
-    #Repeats=5          #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
-    #LenMes=0            #"0" für Euklid, "1" für Manhatten
-    #normali=2           #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
+    Repeats=params.r                            #Anzahl der Wiederholungen mit unterschiedlichen Zentroiden
+    LenMes=params.distance_matrix               #"0" für Euklid, "1" für Manhatten
+    normali=params.norm_method                  #"0" für Keine, "1" für Min-Max-Normalisierung, "2" für z-Normalisierung
 
     if IsRandom==1:
         Datenpunkte=randData(Anzahl, Dimension, MaxValue, MinValue)
     else:
-        Datenpunkte =DataHandling.getAPIData(InputData) 
+        Datenpunkte =data_handling.getAPIData(InputData) 
+        #Datenpunkte = DataHandling.getData("app\K_Means\Examples\Example_Programmierprojekt.csv","c")
         Dimension=Datenpunkte[0].getPosition().size
 
     if(normali==1):
@@ -360,13 +355,13 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     outK=-1
 
     if Elbow==0:
-        bestDp,avgDistance=CompleteKmeans(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+        bestDp,avgDistance=CompleteKmeansParalell(Repeats, autoZyk,Datenpunkte, Zyklen, k, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
         outK=k
     elif(Elbow==1 and multi==0):
 
         DistHistroy=[]
         for i in range(1,maxK):
-            result,avgDistance=CompleteKmeansParalell(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
+            result,avgDistance=CompleteKmeans(Repeats, autoZyk, Datenpunkte, Zyklen, i, Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit)
             DistHistroy.append(avgDistance)
             outK=i
             print("k="+str(i)+" avg. Distance: "+str(avgDistance))
@@ -393,11 +388,11 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
             if aktElbow:
                 break
             
-            m=multiprocessing.Manager()
-            results=m.Queue()
+            #m=multiprocessing.Manager()
+            results=queue.Queue()
             processPool=[]
             for i in range(1,simu+1):
-                process=multiprocessing.Process(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, (j*simu+i), Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
+                process=threading.Thread(target=KmeansProcess, args=(Repeats, autoZyk, Datenpunkte, Zyklen, (j*simu+i), Dimension, MaxValueZet, LenMes, MinValueZet, stopZyk, ZykKrit, results))
                 process.start()
                 processPool.append(process)
            
@@ -451,10 +446,11 @@ def kmeansMain(InputData, k=10, Elbow=1 ,maxK=100 , inaccu=0 , Zyklen=10 , autoZ
     InfoLine["k"]=str(outK)
     InfoLine["avgDistance"]=str(avgDistance)
     Output.append(InfoLine)
-    Output.append(DataHandling.dpToJson(bestDp))
+    Output.append(data_handling.dpToJson(bestDp))
 
     return Output
     
+
 
 
 

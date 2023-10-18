@@ -1,4 +1,4 @@
-FROM python:3.9
+FROM nogil/python
 
 # Install dependencies
 COPY requirements.txt .

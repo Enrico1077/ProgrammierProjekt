@@ -20,7 +20,7 @@ steps:
       - "--region"
       - "europe-west4"
       - "--port"
-      - "80" # Dieser Schritt weist Cloud Run an, den Port 80 zu verwenden
+      - "80" 
 images:
   - "gcr.io/$PROJECT_ID/development:$COMMIT_SHA"
   

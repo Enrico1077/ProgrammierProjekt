@@ -197,43 +197,6 @@ def KmeansAutoZyk(_Datenpunkte, _Zykstop, _k, _Dimension, _MaxValue, _LenMes, _Z
         if ProzVerbes<_ZykKrit:
             break
 
-#---------------------Methode von Chat-GPT zum Testen(Visualisieren)---------------------------------------------
-
-def visualize_clusters(data_points):
-    # Extrahieren Sie die Positionen der Datenpunkte und ihre Cluster-Zuordnungen
-    positions = np.array([dp.getPosition() for dp in data_points])
-    cluster_ids = [dp.getNextCentroid().getPosition() if dp.getNextCentroid() is not None else None for dp in data_points]
-
-    # Erstellen Sie eine Liste von eindeutigen Cluster-IDs
-    unique_clusters = np.unique(cluster_ids, axis=0)
-
-    # Erstellen Sie eine Farbpalette für die Cluster
-    colors = plt.cm.get_cmap('tab10', len(unique_clusters))
-
-    # Erstellen Sie ein Streudiagramm für die Datenpunkte und verwenden Sie Farben basierend auf den Clustern
-    for i, cluster_id in enumerate(unique_clusters):
-        # Filtern Sie die Datenpunkte, die zu diesem Cluster gehören
-        cluster_indices = [j for j, c_id in enumerate(cluster_ids) if np.array_equal(c_id, cluster_id)]
-        cluster_points = positions[cluster_indices]
-
-        plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {i}', c=colors(i), alpha=0.5, marker='o')
-
-    # Extrahieren Sie die Positionen der Zentroide aus den Datenpunkten
-    centroid_positions = np.array([dp.getNextCentroid().getPosition() for dp in data_points if dp.getNextCentroid() is not None])
-
-    # Fügen Sie die Zentroide hinzu
-    plt.scatter(centroid_positions[:, 0], centroid_positions[:, 1], marker='x', color='red', s=100, label='Zentroide')
-
-    plt.xlabel('X-Achse')
-    plt.ylabel('Y-Achse')
-    plt.title('k-Means Clustering Ergebnisse mit Farben pro Cluster und Zentroiden')
-
-    # Fügen Sie eine Legende hinzu
-    plt.legend()
-
-    # Zeigen Sie das Diagramm an
-    plt.show()
-
 
 def CompleteKmeans(_Repeats,_autoZyk,_DataPoints,_Zyklen,_k,_Dimension,_MaxValueZet,_LenMes,_MinValueZet,_stopZyk,_ZykKrit):
     avgMiss=-1
